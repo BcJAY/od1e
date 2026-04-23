@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Present Simple Quest 🎮</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & VARIABLES ─────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:   #0d1b2a;
+  --dark:   #112233;
+  --card:   #1a2e44;
+  --card2:  #1e3550;
+  --border: #2a4a6a;
+  --p1: #ff6b6b; --p1l: #ff8e8e;
+  --p2: #ffd93d; --p2l: #ffe570;
+  --p3: #6bcb77; --p3l: #8de098;
+  --p4: #c77dff; --p4l: #d9a3ff;
+  --white: #f0f6ff;
+  --muted: #7a9bb5;
+  --glow: 0 0 24px rgba(255,255,255,0.06);
+  --radius: 16px;
+  --font-head: 'Fredoka One', cursive;
+  --font-body: 'Nunito', sans-serif;
+}
+
+html, body { height: 100%; background: var(--navy); color: var(--white); font-family: var(--font-body); }
+
+/* starfield bg */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 10%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 50% 60%, rgba(255,255,255,0.2) 0%, transparent 100%),
+    radial-gradient(1px 1px at 10% 80%, rgba(255,255,255,0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 70%, rgba(255,255,255,0.25) 0%, transparent 100%),
+    radial-gradient(1px 1px at 35% 85%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 70% 40%, rgba(255,255,255,0.2) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* ── LAYOUT ─────────────────────────────── */
+.app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── NAV BAR ─────────────────────────────── */
+.nav {
+  display: flex; align-items: center; gap: 0;
+  background: var(--dark);
+  border-bottom: 2px solid var(--border);
+  padding: 0 24px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.nav-logo {
+  font-family: var(--font-head); font-size: 1.4rem;
+  color: var(--white); padding: 14px 20px 14px 0;
+  border-right: 2px solid var(--border); margin-right: 8px;
+  white-space: nowrap;
+}
+.nav-logo span { color: var(--p2); }
+.nav-tabs { display: flex; flex: 1; flex-wrap: wrap; }
+.nav-tab {
+  font-family: var(--font-body); font-weight: 700; font-size: 0.82rem;
+  padding: 14px 18px; cursor: pointer;
+  border: none; background: transparent;
+  color: var(--muted); letter-spacing: 0.4px;
+  transition: color 0.2s, border-bottom 0.2s;
+  border-bottom: 3px solid transparent;
+  text-transform: uppercase; white-space: nowrap;
+  position: relative;
+}
+.nav-tab .tab-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  font-size: 0.72rem; font-weight: 800;
+  background: var(--border); color: var(--muted);
+  margin-right: 7px; transition: background 0.2s, color 0.2s;
+}
+.nav-tab.active { color: var(--white); }
+.nav-tab.active .tab-num { color: var(--navy); }
+.nav-tab[data-page="1"].active { border-bottom-color: var(--p1); }
+.nav-tab[data-page="1"].active .tab-num { background: var(--p1); }
+.nav-tab[data-page="2"].active { border-bottom-color: var(--p2); }
+.nav-tab[data-page="2"].active .tab-num { background: var(--p2); }
+.nav-tab[data-page="3"].active { border-bottom-color: var(--p3); }
+.nav-tab[data-page="3"].active .tab-num { background: var(--p3); }
+.nav-tab[data-page="4"].active { border-bottom-color: var(--p4); }
+.nav-tab[data-page="4"].active .tab-num { background: var(--p4); }
+
+.score-display {
+  margin-left: auto; display: flex; align-items: center; gap: 10px;
+  font-weight: 800; font-size: 0.95rem;
+  padding: 8px 0;
+}
+.score-badge {
+  background: var(--card); border: 2px solid var(--border);
+  border-radius: 20px; padding: 4px 14px;
+  font-size: 0.9rem;
+}
+.score-badge span { color: var(--p2); }
+
+/* ── PAGES ─────────────────────────────── */
+.page { display: none; flex: 1; padding: 28px 24px; max-width: 900px; width: 100%; margin: 0 auto; }
+.page.active { display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.35s ease; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.page-header { text-align: center; }
+.page-title { font-family: var(--font-head); font-size: 2.1rem; line-height: 1.1; }
+.page-subtitle { color: var(--muted); font-size: 0.95rem; margin-top: 6px; }
+
+.page-card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--glow);
+}
+
+/* ── GAME STATUS BAR ─────────────────────────────── */
+.game-status {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; flex-wrap: wrap;
+}
+.round-info { font-size: 0.85rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.progress-bar { flex: 1; max-width: 240px; height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
+.game-score { font-weight: 800; font-size: 0.9rem; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px 24px; border-radius: 50px; border: none;
+  font-family: var(--font-body); font-weight: 800; font-size: 0.9rem;
+  cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+  letter-spacing: 0.3px;
+}
+.btn:active { transform: scale(0.96); }
+.btn-primary { background: var(--p2); color: var(--navy); }
+.btn-primary:hover { box-shadow: 0 0 18px rgba(255,217,61,0.4); }
+.btn-ghost { background: var(--card2); color: var(--white); border: 1.5px solid var(--border); }
+.btn-ghost:hover { border-color: var(--muted); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.feedback-box {
+  border-radius: 12px; padding: 14px 18px;
+  font-weight: 700; font-size: 0.95rem;
+  display: flex; align-items: center; gap: 10px;
+  animation: popIn 0.25s ease;
+}
+@keyframes popIn { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.feedback-box.correct { background: rgba(107,203,119,0.18); border: 1.5px solid var(--p3); color: var(--p3); }
+.feedback-box.wrong   { background: rgba(255,107,107,0.18); border: 1.5px solid var(--p1); color: var(--p1); }
+.feedback-box.info    { background: rgba(199,125,255,0.18); border: 1.5px solid var(--p4); color: var(--p4); }
+
+/* ════════════════════════════════════════
+   PAGE 1 — CONNECT GAME
+════════════════════════════════════════ */
+.connect-verb-label {
+  text-align: center; margin-bottom: 18px;
+}
+.connect-verb-label .verb-name {
+  font-family: var(--font-head); font-size: 2rem;
+  color: var(--p1); display: inline-block;
+  background: rgba(255,107,107,0.12); border: 2px solid rgba(255,107,107,0.3);
+  padding: 6px 28px; border-radius: 50px;
+}
+.connect-verb-label .verb-hint { font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
+
+.connect-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;
+}
+.connect-col-title {
+  font-weight: 800; font-size: 0.75rem; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; text-align: center;
+}
+.connect-items { display: flex; flex-direction: column; gap: 9px; }
+
+.connect-item {
+  padding: 13px 20px; border-radius: 12px;
+  border: 2px solid var(--border);
+  background: var(--card2); cursor: pointer;
+  font-weight: 700; font-size: 1rem; text-align: center;
+  transition: border-color 0.18s, background 0.18s, transform 0.12s, box-shadow 0.18s;
+  position: relative; user-select: none;
+}
+.connect-item:hover:not(.matched):not(.selected) {
+  border-color: var(--muted); background: var(--card);
+  transform: scale(1.02);
+}
+.connect-item.selected {
+  border-color: var(--p2); background: rgba(255,217,61,0.12);
+  box-shadow: 0 0 14px rgba(255,217,61,0.25); transform: scale(1.03);
+  color: var(--p2);
+}
+.connect-item.matched {
+  border-color: var(--p3); background: rgba(107,203,119,0.14);
+  color: var(--p3); cursor: default; transform: none;
+}
+.connect-item.wrong-flash {
+  border-color: var(--p1); background: rgba(255,107,107,0.14);
+  animation: shake 0.35s ease;
+}
+@keyframes shake {
+  0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)}
+}
+
+.connect-line-svg {
+  position: absolute; pointer-events: none; top: 0; left: 0; width: 100%; height: 100%;
+}
+
+/* ════════════════════════════════════════
+   PAGE 2 — CHOOSE PRONOUN
+════════════════════════════════════════ */
+.sentence-display {
+  text-align: center; padding: 20px;
+  font-size: 1.35rem; font-weight: 700; line-height: 1.7;
+  background: var(--card2); border-radius: 14px;
+  border: 1.5px solid var(--border);
+}
+.sentence-display .blank {
+  display: inline-block; min-width: 90px;
+  border-bottom: 3px solid var(--p2);
+  color: var(--p2); font-family: var(--font-head);
+  font-size: 1.45rem; text-align: center;
+  padding: 0 8px; margin: 0 4px; vertical-align: bottom;
+}
+.sentence-display .sentence-hint {
+  display: block; font-size: 0.8rem; color: var(--muted);
+  font-weight: 600; margin-top: 8px; font-style: italic;
+}
+
+.choices-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.choice-btn {
+  padding: 16px 20px; border-radius: 14px;
+  border: 2px solid var(--border); background: var(--card2);
+  color: var(--white); cursor: pointer;
+  font-family: var(--font-body); font-weight: 700; font-size: 1.05rem;
+  text-align: center; transition: all 0.18s;
+}
+.choice-btn:hover:not(:disabled):not(.locked) {
+  border-color: var(--p4); background: rgba(199,125,255,0.1);
+  transform: translateY(-2px);
+}
+.choice-btn.correct-ans { border-color: var(--p3); background: rgba(107,203,119,0.16); color: var(--p3); }
+.choice-btn.wrong-ans   { border-color: var(--p1); background: rgba(255,107,107,0.14); color: var(--p1); }
+.choice-btn.locked { cursor: default; }
+
+/* ════════════════════════════════════════
+   PAGE 3 — CONJUGATE
+════════════════════════════════════════ */
+.conj-verb-header {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.conj-verb-tag {
+  font-family: var(--font-head); font-size: 1.5rem;
+  background: rgba(107,203,119,0.15); border: 2px solid rgba(107,203,119,0.35);
+  color: var(--p3); border-radius: 50px; padding: 5px 22px;
+}
+.conj-instruction { font-size: 0.9rem; color: var(--muted); font-weight: 600; }
+
+.conj-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+.conj-table tr td { padding: 0; }
+.conj-row {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--card2); border-radius: 12px;
+  padding: 12px 16px; margin-bottom: 8px;
+  border: 1.5px solid var(--border);
+  transition: border-color 0.2s;
+}
+.conj-row.correct-row { border-color: var(--p3); }
+.conj-row.wrong-row   { border-color: var(--p1); }
+.conj-pronoun {
+  font-family: var(--font-head); font-size: 1.1rem;
+  color: var(--p2); min-width: 52px;
+}
+.conj-equals { color: var(--muted); font-size: 0.85rem; }
+.conj-input {
+  flex: 1; background: var(--card); border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 8px 14px;
+  color: var(--white); font-family: var(--font-body); font-weight: 700; font-size: 1rem;
+  outline: none; transition: border-color 0.18s;
+}
+.conj-input:focus { border-color: var(--p3); }
+.conj-input.correct { border-color: var(--p3); background: rgba(107,203,119,0.1); color: var(--p3); }
+.conj-input.wrong   { border-color: var(--p1); background: rgba(255,107,107,0.1); color: var(--p1); }
+.conj-tick { font-size: 1.1rem; min-width: 24px; text-align: center; }
+
+.conj-choices { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+.conj-choice {
+  padding: 8px 16px; border-radius: 8px; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--white);
+  font-family: var(--font-body); font-weight: 700; font-size: 0.95rem;
+  cursor: pointer; transition: all 0.15s;
+}
+.conj-choice:hover:not(:disabled) { border-color: var(--p3); color: var(--p3); }
+.conj-choice.selected-correct { border-color: var(--p3); background: rgba(107,203,119,0.15); color: var(--p3); }
+.conj-choice.selected-wrong   { border-color: var(--p1); background: rgba(255,107,107,0.12); color: var(--p1); }
+.conj-choice:disabled { opacity: 0.45; cursor: default; }
+
+/* ════════════════════════════════════════
+   PAGE 4 — QUESTIONS
+════════════════════════════════════════ */
+.q-type-badge {
+  display: inline-block; font-size: 0.72rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  padding: 3px 12px; border-radius: 20px; margin-bottom: 10px;
+}
+.badge-yesno  { background: rgba(107,203,119,0.2); color: var(--p3); border: 1px solid var(--p3); }
+.badge-wh     { background: rgba(199,125,255,0.2); color: var(--p4); border: 1px solid var(--p4); }
+.badge-form   { background: rgba(255,217,61,0.2);  color: var(--p2); border: 1px solid var(--p2); }
+.badge-error  { background: rgba(255,107,107,0.2); color: var(--p1); border: 1px solid var(--p1); }
+
+.q-prompt {
+  font-size: 1.2rem; font-weight: 700; line-height: 1.6;
+  background: var(--card2); border-radius: 12px;
+  padding: 18px 20px; border: 1.5px solid var(--border);
+  margin-bottom: 16px;
+}
+.q-prompt .q-blank {
+  display: inline-block; min-width: 100px;
+  border-bottom: 3px solid var(--p4); color: var(--p4);
+  font-family: var(--font-head); font-size: 1.25rem;
+  padding: 0 8px; margin: 0 4px; vertical-align: bottom;
+}
+.q-choices { display: flex; flex-direction: column; gap: 9px; }
+.q-choice {
+  padding: 14px 18px; border-radius: 12px;
+  border: 2px solid var(--border); background: var(--card2);
+  color: var(--white); cursor: pointer;
+  font-family: var(--font-body); font-weight: 700; font-size: 0.97rem;
+  text-align: left; transition: all 0.18s; display: flex; align-items: center; gap: 12px;
+}
+.q-choice .q-letter {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%; font-size: 0.78rem;
+  background: var(--border); flex-shrink: 0; transition: background 0.15s;
+}
+.q-choice:hover:not(.locked) { border-color: var(--p4); transform: translateX(4px); }
+.q-choice.correct-ans { border-color: var(--p3); background: rgba(107,203,119,0.1); color: var(--p3); }
+.q-choice.correct-ans .q-letter { background: var(--p3); color: var(--navy); }
+.q-choice.wrong-ans   { border-color: var(--p1); background: rgba(255,107,107,0.1); color: var(--p1); }
+.q-choice.wrong-ans .q-letter { background: var(--p1); color: var(--navy); }
+.q-choice.locked { cursor: default; }
+
+/* ── RESULTS SCREEN ─────────────────────────────── */
+.results-screen {
+  text-align: center; padding: 30px 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 18px;
+}
+.results-emoji { font-size: 4rem; animation: bounce 0.6s ease; }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
+.results-title { font-family: var(--font-head); font-size: 2rem; }
+.results-score { font-size: 3.5rem; font-weight: 800; color: var(--p2); font-family: var(--font-head); }
+.results-msg   { color: var(--muted); font-size: 1rem; max-width: 320px; }
+.results-breakdown { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+.rb-item { background: var(--card2); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 20px; font-size: 0.88rem; }
+
+/* ── CONFETTI ─────────────────────────────── */
+.confetti { position: fixed; pointer-events: none; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; }
+.conf-piece {
+  position: absolute; width: 8px; height: 8px; border-radius: 2px;
+  animation: confFall linear forwards;
+}
+@keyframes confFall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+/* ── UTILS ─────────────────────────────── */
+.hidden { display: none !important; }
+.text-center { text-align: center; }
+.mt-10 { margin-top: 10px; }
+.mt-16 { margin-top: 16px; }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-10 { gap: 10px; }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--dark); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+@media (max-width: 560px) {
+  .connect-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .choices-grid { grid-template-columns: 1fr 1fr; }
+  .nav-tab { font-size: 0.72rem; padding: 12px 10px; }
+  .page-title { font-size: 1.6rem; }
+  .score-display { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ── NAV ── -->
+<nav class="nav">
+  <div class="nav-logo">Present <span>Quest</span> 🎮</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-page="1" onclick="goPage(1)">
+      <span class="tab-num">1</span>Connect It
+    </button>
+    <button class="nav-tab" data-page="2" onclick="goPage(2)">
+      <span class="tab-num">2</span>Pick the Pronoun
+    </button>
+    <button class="nav-tab" data-page="3" onclick="goPage(3)">
+      <span class="tab-num">3</span>Conjugate!
+    </button>
+    <button class="nav-tab" data-page="4" onclick="goPage(4)">
+      <span class="tab-num">4</span>Questions
+    </button>
+  </div>
+  <div class="score-display">
+    <span style="color:var(--muted); font-size:0.8rem; font-weight:700; text-transform:uppercase;">Total</span>
+    <div class="score-badge">⭐ <span id="global-score">0</span></div>
+  </div>
+</nav>
+
+<!-- ════════════════════════ PAGE 1 ════════════════════════ -->
+<div class="page active" id="page-1">
+  <div class="page-header">
+    <div class="page-title" style="color:var(--p1)">🔗 Connect It</div>
+    <div class="page-subtitle">Click a pronoun, then click the matching verb form!</div>
+  </div>
+
+  <div class="page-card">
+    <div class="game-status">
+      <div class="round-info">Round <span id="p1-round">1</span> / <span id="p1-total">6</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="p1-progress" style="width:0%;background:var(--p1)"></div></div>
+      <div class="game-score" style="color:var(--p1)">⭐ <span id="p1-score">0</span></div>
+    </div>
+  </div>
+
+  <div class="page-card" id="p1-game-area">
+    <div class="connect-verb-label">
+      <div class="verb-name" id="p1-verb-display">TO BE</div>
+      <div class="verb-hint" id="p1-verb-hint">Match each pronoun with its correct form!</div>
+    </div>
+    <div class="connect-grid">
+      <div>
+        <div class="connect-col-title">🧑 Pronouns</div>
+        <div class="connect-items" id="p1-pronouns"></div>
+      </div>
+      <div>
+        <div class="connect-col-title">📝 Verb Forms</div>
+        <div class="connect-items" id="p1-verbs"></div>
+      </div>
+    </div>
+    <div id="p1-feedback" class="hidden mt-10"></div>
+    <div class="flex items-center justify-between gap-10 mt-16">
+      <button class="btn btn-ghost" id="p1-hint-btn" onclick="p1Hint()">💡 Hint</button>
+      <button class="btn btn-primary hidden" id="p1-next-btn" onclick="p1NextRound()">Next Verb →</button>
+    </div>
+  </div>
+
+  <div class="page-card hidden" id="p1-results">
+    <div class="results-screen">
+      <div class="results-emoji" id="p1-emoji">🌟</div>
+      <div class="results-title">Round Complete!</div>
+      <div class="results-score"><span id="p1-final-score">0</span> / 6</div>
+      <div class="results-msg" id="p1-msg"></div>
+      <button class="btn btn-primary" onclick="p1Restart()">🔄 Play Again</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ PAGE 2 ════════════════════════ -->
+<div class="page" id="page-2">
+  <div class="page-header">
+    <div class="page-title" style="color:var(--p2)">🤔 Pick the Pronoun</div>
+    <div class="page-subtitle">Choose the correct pronoun to complete the sentence.</div>
+  </div>
+
+  <div class="page-card">
+    <div class="game-status">
+      <div class="round-info">Question <span id="p2-q">1</span> / 10</div>
+      <div class="progress-bar"><div class="progress-fill" id="p2-progress" style="width:0%;background:var(--p2)"></div></div>
+      <div class="game-score" style="color:var(--p2)">⭐ <span id="p2-score">0</span></div>
+    </div>
+  </div>
+
+  <div class="page-card" id="p2-game-area">
+    <div class="sentence-display" id="p2-sentence-display"></div>
+    <div class="choices-grid mt-16" id="p2-choices"></div>
+    <div id="p2-feedback" class="hidden mt-10"></div>
+    <div class="flex justify-between items-center mt-16">
+      <div></div>
+      <button class="btn btn-primary hidden" id="p2-next-btn" onclick="p2Next()">Next →</button>
+    </div>
+  </div>
+
+  <div class="page-card hidden" id="p2-results">
+    <div class="results-screen">
+      <div class="results-emoji" id="p2-emoji">🌟</div>
+      <div class="results-title">All Done!</div>
+      <div class="results-score"><span id="p2-final">0</span> / 10</div>
+      <div class="results-msg" id="p2-msg"></div>
+      <button class="btn btn-primary" onclick="p2Restart()">🔄 Try Again</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ PAGE 3 ════════════════════════ -->
+<div class="page" id="page-3">
+  <div class="page-header">
+    <div class="page-title" style="color:var(--p3)">⚙️ Conjugate!</div>
+    <div class="page-subtitle">Fill in the correct verb form for every pronoun.</div>
+  </div>
+
+  <div class="page-card">
+    <div class="game-status">
+      <div class="round-info">Verb <span id="p3-round">1</span> / <span id="p3-total">8</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="p3-progress" style="width:0%;background:var(--p3)"></div></div>
+      <div class="game-score" style="color:var(--p3)">⭐ <span id="p3-score">0</span></div>
+    </div>
+  </div>
+
+  <div class="page-card" id="p3-game-area">
+    <div class="conj-verb-header">
+      <div class="conj-verb-tag" id="p3-verb-tag">TO BE</div>
+      <div class="conj-instruction" id="p3-instruction">Choose the correct form for each pronoun.</div>
+    </div>
+    <div id="p3-rows" class="mt-16"></div>
+    <div id="p3-feedback" class="hidden mt-10"></div>
+    <div class="flex justify-between items-center mt-16">
+      <button class="btn btn-ghost" id="p3-check-btn" onclick="p3Check()">✅ Check Answers</button>
+      <button class="btn btn-primary hidden" id="p3-next-btn" onclick="p3Next()">Next Verb →</button>
+    </div>
+  </div>
+
+  <div class="page-card hidden" id="p3-results">
+    <div class="results-screen">
+      <div class="results-emoji" id="p3-emoji">🌟</div>
+      <div class="results-title">Conjugation Master!</div>
+      <div class="results-score"><span id="p3-final">0</span></div>
+      <div class="results-msg" id="p3-msg"></div>
+      <button class="btn btn-primary" onclick="p3Restart()">🔄 Practice Again</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ PAGE 4 ════════════════════════ -->
+<div class="page" id="page-4">
+  <div class="page-header">
+    <div class="page-title" style="color:var(--p4)">❓ Questions</div>
+    <div class="page-subtitle">Yes/No, Wh- questions, and more in the present simple!</div>
+  </div>
+
+  <div class="page-card">
+    <div class="game-status">
+      <div class="round-info">Question <span id="p4-q">1</span> / 12</div>
+      <div class="progress-bar"><div class="progress-fill" id="p4-progress" style="width:0%;background:var(--p4)"></div></div>
+      <div class="game-score" style="color:var(--p4)">⭐ <span id="p4-score">0</span></div>
+    </div>
+  </div>
+
+  <div class="page-card" id="p4-game-area">
+    <div id="p4-badge"></div>
+    <div class="q-prompt" id="p4-prompt"></div>
+    <div class="q-choices" id="p4-choices"></div>
+    <div id="p4-feedback" class="hidden mt-10"></div>
+    <div class="flex justify-between items-center mt-16">
+      <div></div>
+      <button class="btn btn-primary hidden" id="p4-next-btn" onclick="p4Next()">Next →</button>
+    </div>
+  </div>
+
+  <div class="page-card hidden" id="p4-results">
+    <div class="results-screen">
+      <div class="results-emoji" id="p4-emoji">🌟</div>
+      <div class="results-title">Question Expert!</div>
+      <div class="results-score"><span id="p4-final">0</span> / 12</div>
+      <div class="results-msg" id="p4-msg"></div>
+      <div class="results-breakdown" id="p4-breakdown"></div>
+      <button class="btn btn-primary" onclick="p4Restart()">🔄 Play Again</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- .app -->
+<div class="confetti" id="confetti-container"></div>
+
+<script>
+// ══════════════════════════════════════════
+// GLOBAL
+// ══════════════════════════════════════════
+let globalScore = 0;
+function addGlobal(n) {
+  globalScore += n;
+  document.getElementById('global-score').textContent = globalScore;
+}
+
+function goPage(n) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + n).classList.add('active');
+  document.querySelector(`.nav-tab[data-page="${n}"]`).classList.add('active');
+}
+
+function setFeedback(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = `feedback-box ${type}`;
+  el.innerHTML = (type === 'correct' ? '✅ ' : type === 'wrong' ? '❌ ' : 'ℹ️ ') + msg;
+  el.classList.remove('hidden');
+}
+
+function launchConfetti() {
+  const c = document.getElementById('confetti-container');
+  c.innerHTML = '';
+  const colors = ['#ff6b6b','#ffd93d','#6bcb77','#c77dff','#4ecdc4','#ff9a3c'];
+  for (let i = 0; i < 60; i++) {
+    const d = document.createElement('div');
+    d.className = 'conf-piece';
+    d.style.left = Math.random() * 100 + 'vw';
+    d.style.background = colors[Math.floor(Math.random() * colors.length)];
+    d.style.animationDuration = (1.2 + Math.random() * 1.6) + 's';
+    d.style.animationDelay = Math.random() * 0.5 + 's';
+    c.appendChild(d);
+    setTimeout(() => d.remove(), 3000);
+  }
+}
+
+function getEmoji(score, total) {
+  const pct = score / total;
+  if (pct === 1) return '🏆';
+  if (pct >= 0.8) return '🌟';
+  if (pct >= 0.6) return '😊';
+  if (pct >= 0.4) return '💪';
+  return '📚';
+}
+function getMsg(score, total) {
+  const pct = score / total;
+  if (pct === 1) return 'Perfect score! You\'re a grammar champion! 🎉';
+  if (pct >= 0.8) return 'Excellent work! Almost perfect!';
+  if (pct >= 0.6) return 'Good job! Keep practicing!';
+  if (pct >= 0.4) return 'Not bad! Review the answers and try again.';
+  return 'Keep practicing — you\'ll get there! 💪';
+}
+
+// ══════════════════════════════════════════
+// PAGE 1 — CONNECT GAME
+// ══════════════════════════════════════════
+const p1Verbs = [
+  {
+    verb: 'TO BE', hint: 'Subject + am / is / are',
+    pairs: [
+      { pronoun: 'I',    form: 'am'  },
+      { pronoun: 'You',  form: 'are' },
+      { pronoun: 'He',   form: 'is'  },
+      { pronoun: 'She',  form: 'is'  },
+      { pronoun: 'It',   form: 'is'  },
+      { pronoun: 'We',   form: 'are' },
+      { pronoun: 'They', form: 'are' },
+    ]
+  },
+  {
+    verb: 'TO HAVE', hint: 'I/You/We/They → have  |  He/She/It → has',
+    pairs: [
+      { pronoun: 'I',    form: 'have' },
+      { pronoun: 'You',  form: 'have' },
+      { pronoun: 'He',   form: 'has'  },
+      { pronoun: 'She',  form: 'has'  },
+      { pronoun: 'It',   form: 'has'  },
+      { pronoun: 'We',   form: 'have' },
+      { pronoun: 'They', form: 'have' },
+    ]
+  },
+  {
+    verb: 'TO GO', hint: 'He/She/It → goes  |  Others → go',
+    pairs: [
+      { pronoun: 'I',    form: 'go'   },
+      { pronoun: 'You',  form: 'go'   },
+      { pronoun: 'He',   form: 'goes' },
+      { pronoun: 'She',  form: 'goes' },
+      { pronoun: 'It',   form: 'goes' },
+      { pronoun: 'We',   form: 'go'   },
+      { pronoun: 'They', form: 'go'   },
+    ]
+  },
+  {
+    verb: 'TO DO', hint: 'He/She/It → does  |  Others → do',
+    pairs: [
+      { pronoun: 'I',    form: 'do'   },
+      { pronoun: 'You',  form: 'do'   },
+      { pronoun: 'He',   form: 'does' },
+      { pronoun: 'She',  form: 'does' },
+      { pronoun: 'It',   form: 'does' },
+      { pronoun: 'We',   form: 'do'   },
+      { pronoun: 'They', form: 'do'   },
+    ]
+  },
+  {
+    verb: 'TO SPEAK', hint: 'He/She/It → speaks  |  Others → speak',
+    pairs: [
+      { pronoun: 'I',    form: 'speak'  },
+      { pronoun: 'You',  form: 'speak'  },
+      { pronoun: 'He',   form: 'speaks' },
+      { pronoun: 'She',  form: 'speaks' },
+      { pronoun: 'It',   form: 'speaks' },
+      { pronoun: 'We',   form: 'speak'  },
+      { pronoun: 'They', form: 'speak'  },
+    ]
+  },
+  {
+    verb: 'TO WATCH', hint: 'He/She/It → watches (add -es after -ch)',
+    pairs: [
+      { pronoun: 'I',    form: 'watch'   },
+      { pronoun: 'You',  form: 'watch'   },
+      { pronoun: 'He',   form: 'watches' },
+      { pronoun: 'She',  form: 'watches' },
+      { pronoun: 'It',   form: 'watches' },
+      { pronoun: 'We',   form: 'watch'   },
+      { pronoun: 'They', form: 'watch'   },
+    ]
+  }
+];
+
+let p1Round = 0, p1Score = 0;
+let p1SelectedPronoun = null, p1MatchedCount = 0, p1HintUsed = false;
+
+function p1Init() {
+  p1Round = 0; p1Score = 0;
+  p1Render();
+}
+
+function p1Render() {
+  const data = p1Verbs[p1Round];
+  document.getElementById('p1-round').textContent = p1Round + 1;
+  document.getElementById('p1-total').textContent = p1Verbs.length;
+  document.getElementById('p1-score').textContent = p1Score;
+  document.getElementById('p1-progress').style.width = (p1Round / p1Verbs.length * 100) + '%';
+  document.getElementById('p1-verb-display').textContent = data.verb;
+  document.getElementById('p1-verb-hint').textContent = data.hint;
+  document.getElementById('p1-feedback').classList.add('hidden');
+  document.getElementById('p1-next-btn').classList.add('hidden');
+  document.getElementById('p1-hint-btn').disabled = false;
+  p1SelectedPronoun = null;
+  p1MatchedCount = 0;
+  p1HintUsed = false;
+
+  // Build unique verb forms list, shuffled
+  const uniqueForms = [...new Set(data.pairs.map(p => p.form))];
+  const shuffled = uniqueForms.sort(() => Math.random() - 0.5);
+
+  const pEl = document.getElementById('p1-pronouns');
+  pEl.innerHTML = '';
+  data.pairs.forEach(pair => {
+    const d = document.createElement('div');
+    d.className = 'connect-item';
+    d.textContent = pair.pronoun;
+    d.dataset.pronoun = pair.pronoun;
+    d.dataset.correctForm = pair.form;
+    d.onclick = () => p1SelectPronoun(d);
+    pEl.appendChild(d);
+  });
+
+  const vEl = document.getElementById('p1-verbs');
+  vEl.innerHTML = '';
+
+  // Build one card per unique form, but allow multiple pronouns to match
+  // Track how many pronouns need each form
+  const formCount = {};
+  data.pairs.forEach(p => { formCount[p.form] = (formCount[p.form] || 0) + 1; });
+
+  shuffled.forEach(form => {
+    const d = document.createElement('div');
+    d.className = 'connect-item';
+    d.dataset.form = form;
+    d.dataset.remaining = formCount[form];
+    const count = formCount[form] > 1 ? ` (×${formCount[form]})` : '';
+    d.textContent = form + count;
+    d.onclick = () => p1SelectForm(d);
+    vEl.appendChild(d);
+  });
+}
+
+function p1SelectPronoun(el) {
+  if (el.classList.contains('matched')) return;
+  document.querySelectorAll('#p1-pronouns .connect-item').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  p1SelectedPronoun = el;
+}
+
+function p1SelectForm(el) {
+  if (!p1SelectedPronoun) {
+    setFeedback('p1-feedback', 'info', 'First click a pronoun on the left!');
+    return;
+  }
+  const form = el.dataset.form;
+  const correct = p1SelectedPronoun.dataset.correctForm;
+
+  if (form === correct) {
+    p1SelectedPronoun.classList.remove('selected');
+    p1SelectedPronoun.classList.add('matched');
+    p1SelectedPronoun.style.opacity = '0.6';
+
+    // Decrease remaining on form card
+    let rem = parseInt(el.dataset.remaining) - 1;
+    el.dataset.remaining = rem;
+    if (rem <= 0) {
+      el.classList.add('matched');
+      el.style.opacity = '0.6';
+    } else {
+      const base = el.dataset.form;
+      el.textContent = base + (rem > 1 ? ` (×${rem})` : '');
+    }
+
+    p1MatchedCount++;
+    p1SelectedPronoun = null;
+    document.getElementById('p1-feedback').classList.add('hidden');
+
+    if (p1MatchedCount === p1Verbs[p1Round].pairs.length) {
+      const earned = p1HintUsed ? 0.5 : 1;
+      p1Score += earned;
+      document.getElementById('p1-score').textContent = Math.round(p1Score * 10) / 10;
+      addGlobal(Math.round(earned));
+      setFeedback('p1-feedback', 'correct', `All matched! ${p1HintUsed ? 'Hint was used (½ point).' : 'Full point! 🎉'}`);
+      document.getElementById('p1-next-btn').classList.remove('hidden');
+      if (p1Round + 1 === p1Verbs.length) {
+        document.getElementById('p1-next-btn').textContent = 'See Results 🏆';
+      }
+      if (!p1HintUsed) launchConfetti();
+    }
+  } else {
+    el.classList.add('wrong-flash');
+    p1SelectedPronoun.classList.add('wrong-flash');
+    setTimeout(() => {
+      el.classList.remove('wrong-flash');
+      if (p1SelectedPronoun) p1SelectedPronoun.classList.remove('wrong-flash');
+    }, 400);
+    setFeedback('p1-feedback', 'wrong', `"${p1SelectedPronoun.dataset.pronoun}" does not use "${form}". Try again!`);
+    p1SelectedPronoun.classList.remove('selected');
+    p1SelectedPronoun = null;
+  }
+}
+
+function p1Hint() {
+  p1HintUsed = true;
+  document.getElementById('p1-hint-btn').disabled = true;
+  const data = p1Verbs[p1Round];
+  // Highlight one unmatched pronoun and its form
+  const unmatched = [...document.querySelectorAll('#p1-pronouns .connect-item:not(.matched)')];
+  if (unmatched.length === 0) return;
+  const target = unmatched[0];
+  const form = target.dataset.correctForm;
+  target.style.boxShadow = '0 0 0 3px var(--p2)';
+  const formEl = [...document.querySelectorAll('#p1-verbs .connect-item')].find(e => e.dataset.form === form && !e.classList.contains('matched'));
+  if (formEl) formEl.style.boxShadow = '0 0 0 3px var(--p2)';
+  setFeedback('p1-feedback', 'info', `Hint: "${target.dataset.pronoun}" → "${form}" (−½ point for this round)`);
+  setTimeout(() => {
+    target.style.boxShadow = '';
+    if (formEl) formEl.style.boxShadow = '';
+  }, 2000);
+}
+
+function p1NextRound() {
+  p1Round++;
+  if (p1Round >= p1Verbs.length) {
+    p1ShowResults();
+  } else {
+    p1Render();
+  }
+}
+
+function p1ShowResults() {
+  document.getElementById('p1-game-area').classList.add('hidden');
+  const res = document.getElementById('p1-results');
+  res.classList.remove('hidden');
+  const s = Math.round(p1Score * 10) / 10;
+  document.getElementById('p1-final-score').textContent = s;
+  document.getElementById('p1-emoji').textContent = getEmoji(s, p1Verbs.length);
+  document.getElementById('p1-msg').textContent = getMsg(s, p1Verbs.length);
+  if (s >= p1Verbs.length * 0.8) launchConfetti();
+}
+
+function p1Restart() {
+  document.getElementById('p1-game-area').classList.remove('hidden');
+  document.getElementById('p1-results').classList.add('hidden');
+  p1Init();
+}
+
+// ══════════════════════════════════════════
+// PAGE 2 — CHOOSE PRONOUN
+// ══════════════════════════════════════════
+const p2Questions = [
+  { pre: '', blank: '___', post: ' is a doctor. She works at the hospital.', answer: 'She', choices: ['He','She','They','I'], hint: 'feminine, singular' },
+  { pre: '', blank: '___', post: ' play football every Saturday morning.', answer: 'They', choices: ['He','She','They','I'], hint: 'plural people' },
+  { pre: '', blank: '___', post: ' am from Taiwan. I live in Kaohsiung.', answer: 'I', choices: ['I','You','He','We'], hint: 'first person singular' },
+  { pre: '', blank: '___', post: ' has a big dog named Max.', answer: 'He', choices: ['She','He','We','They'], hint: 'masculine singular' },
+  { pre: 'My friends and', blank: ' ___', post: ' go to the same school.', answer: 'I', choices: ['me','I','we','us'], hint: 'subject pronoun after "and"' },
+  { pre: '', blank: '___', post: ' rains a lot in November.', answer: 'It', choices: ['He','She','It','They'], hint: 'used for weather' },
+  { pre: '', blank: '___', post: ' love pizza and pasta.', answer: 'We', choices: ['They','We','He','I'], hint: 'first person plural' },
+  { pre: 'The cat drinks milk. ', blank: '___', post: ' is very thirsty.', answer: 'It', choices: ['He','She','It','They'], hint: 'refers to an animal (neutral)' },
+  { pre: '', blank: '___', post: ' often forgets her keys.', answer: 'She', choices: ['He','She','They','We'], hint: '"her" clue → feminine' },
+  { pre: '', blank: '___', post: ' are my best friends from school.', answer: 'They', choices: ['We','She','They','He'], hint: 'plural + "are"' },
+];
+
+let p2Idx = 0, p2Score = 0, p2Locked = false;
+
+function p2Init() { p2Idx = 0; p2Score = 0; p2Render(); }
+
+function p2Render() {
+  const q = p2Questions[p2Idx];
+  p2Locked = false;
+  document.getElementById('p2-q').textContent = p2Idx + 1;
+  document.getElementById('p2-score').textContent = p2Score;
+  document.getElementById('p2-progress').style.width = (p2Idx / p2Questions.length * 100) + '%';
+  document.getElementById('p2-feedback').classList.add('hidden');
+  document.getElementById('p2-next-btn').classList.add('hidden');
+
+  const disp = document.getElementById('p2-sentence-display');
+  disp.innerHTML = `${q.pre}<span class="blank" id="p2-blank">?</span>${q.post}
+    <span class="sentence-hint">Hint: ${q.hint}</span>`;
+
+  const ch = document.getElementById('p2-choices');
+  ch.innerHTML = '';
+  const shuffled = [...q.choices].sort(() => Math.random() - 0.5);
+  shuffled.forEach(opt => {
+    const b = document.createElement('button');
+    b.className = 'choice-btn';
+    b.textContent = opt;
+    b.onclick = () => p2Answer(b, opt, q);
+    ch.appendChild(b);
+  });
+}
+
+function p2Answer(btn, chosen, q) {
+  if (p2Locked) return;
+  p2Locked = true;
+  document.getElementById('p2-blank').textContent = chosen;
+
+  document.querySelectorAll('#p2-choices .choice-btn').forEach(b => {
+    b.classList.add('locked');
+    if (b.textContent === q.answer) b.classList.add('correct-ans');
+  });
+
+  if (chosen === q.answer) {
+    btn.classList.add('correct-ans');
+    p2Score++;
+    addGlobal(1);
+    document.getElementById('p2-score').textContent = p2Score;
+    setFeedback('p2-feedback', 'correct', 'Correct! Well done! 🎉');
+  } else {
+    btn.classList.add('wrong-ans');
+    setFeedback('p2-feedback', 'wrong', `Not quite. The answer is <strong>${q.answer}</strong>.`);
+  }
+
+  const nextBtn = document.getElementById('p2-next-btn');
+  nextBtn.classList.remove('hidden');
+  nextBtn.textContent = p2Idx + 1 < p2Questions.length ? 'Next →' : 'See Results 🏆';
+}
+
+function p2Next() {
+  p2Idx++;
+  if (p2Idx >= p2Questions.length) {
+    p2ShowResults();
+  } else {
+    p2Render();
+  }
+}
+
+function p2ShowResults() {
+  document.getElementById('p2-game-area').classList.add('hidden');
+  const res = document.getElementById('p2-results');
+  res.classList.remove('hidden');
+  document.getElementById('p2-final').textContent = p2Score;
+  document.getElementById('p2-emoji').textContent = getEmoji(p2Score, p2Questions.length);
+  document.getElementById('p2-msg').textContent = getMsg(p2Score, p2Questions.length);
+  if (p2Score >= 8) launchConfetti();
+}
+
+function p2Restart() {
+  document.getElementById('p2-game-area').classList.remove('hidden');
+  document.getElementById('p2-results').classList.add('hidden');
+  p2Init();
+}
+
+// ══════════════════════════════════════════
+// PAGE 3 — CONJUGATE
+// ══════════════════════════════════════════
+const p3VerbSets = [
+  {
+    verb: 'TO BE', type: 'mcq',
+    rows: [
+      { pronoun: 'I',    choices: ['am','is','are'], answer: 'am'  },
+      { pronoun: 'You',  choices: ['am','is','are'], answer: 'are' },
+      { pronoun: 'He',   choices: ['am','is','are'], answer: 'is'  },
+      { pronoun: 'She',  choices: ['am','is','are'], answer: 'is'  },
+      { pronoun: 'We',   choices: ['am','is','are'], answer: 'are' },
+      { pronoun: 'They', choices: ['am','is','are'], answer: 'are' },
+    ]
+  },
+  {
+    verb: 'TO HAVE', type: 'mcq',
+    rows: [
+      { pronoun: 'I',    choices: ['has','have'], answer: 'have' },
+      { pronoun: 'She',  choices: ['has','have'], answer: 'has'  },
+      { pronoun: 'He',   choices: ['has','have'], answer: 'has'  },
+      { pronoun: 'We',   choices: ['has','have'], answer: 'have' },
+      { pronoun: 'They', choices: ['has','have'], answer: 'have' },
+      { pronoun: 'It',   choices: ['has','have'], answer: 'has'  },
+    ]
+  },
+  {
+    verb: 'TO DO', type: 'mcq',
+    rows: [
+      { pronoun: 'I',    choices: ['do','does'], answer: 'do'   },
+      { pronoun: 'You',  choices: ['do','does'], answer: 'do'   },
+      { pronoun: 'He',   choices: ['do','does'], answer: 'does' },
+      { pronoun: 'She',  choices: ['do','does'], answer: 'does' },
+      { pronoun: 'We',   choices: ['do','does'], answer: 'do'   },
+      { pronoun: 'They', choices: ['do','does'], answer: 'do'   },
+    ]
+  },
+  {
+    verb: 'TO GO', type: 'type',
+    rows: [
+      { pronoun: 'I',    answer: 'go'   },
+      { pronoun: 'You',  answer: 'go'   },
+      { pronoun: 'She',  answer: 'goes' },
+      { pronoun: 'He',   answer: 'goes' },
+      { pronoun: 'We',   answer: 'go'   },
+      { pronoun: 'They', answer: 'go'   },
+    ]
+  },
+  {
+    verb: 'TO STUDY', type: 'type',
+    rows: [
+      { pronoun: 'I',    answer: 'study'   },
+      { pronoun: 'You',  answer: 'study'   },
+      { pronoun: 'He',   answer: 'studies' },
+      { pronoun: 'She',  answer: 'studies' },
+      { pronoun: 'We',   answer: 'study'   },
+      { pronoun: 'They', answer: 'study'   },
+    ]
+  },
+  {
+    verb: 'TO EAT', type: 'type',
+    rows: [
+      { pronoun: 'I',    answer: 'eat'  },
+      { pronoun: 'You',  answer: 'eat'  },
+      { pronoun: 'He',   answer: 'eats' },
+      { pronoun: 'She',  answer: 'eats' },
+      { pronoun: 'We',   answer: 'eat'  },
+      { pronoun: 'They', answer: 'eat'  },
+    ]
+  },
+  {
+    verb: 'TO LIKE', type: 'type',
+    rows: [
+      { pronoun: 'I',    answer: 'like'  },
+      { pronoun: 'You',  answer: 'like'  },
+      { pronoun: 'He',   answer: 'likes' },
+      { pronoun: 'She',  answer: 'likes' },
+      { pronoun: 'We',   answer: 'like'  },
+      { pronoun: 'They', answer: 'like'  },
+    ]
+  },
+  {
+    verb: 'TO WATCH', type: 'mcq',
+    rows: [
+      { pronoun: 'I',    choices: ['watch','watches'], answer: 'watch'   },
+      { pronoun: 'She',  choices: ['watch','watches'], answer: 'watches' },
+      { pronoun: 'He',   choices: ['watch','watches'], answer: 'watches' },
+      { pronoun: 'We',   choices: ['watch','watches'], answer: 'watch'   },
+      { pronoun: 'They', choices: ['watch','watches'], answer: 'watch'   },
+      { pronoun: 'It',   choices: ['watch','watches'], answer: 'watches' },
+    ]
+  }
+];
+
+let p3Round = 0, p3Score = 0, p3Checked = false;
+
+function p3Init() { p3Round = 0; p3Score = 0; p3Render(); }
+
+function p3Render() {
+  p3Checked = false;
+  const data = p3VerbSets[p3Round];
+  document.getElementById('p3-round').textContent = p3Round + 1;
+  document.getElementById('p3-total').textContent = p3VerbSets.length;
+  document.getElementById('p3-score').textContent = p3Score;
+  document.getElementById('p3-progress').style.width = (p3Round / p3VerbSets.length * 100) + '%';
+  document.getElementById('p3-verb-tag').textContent = data.verb;
+  document.getElementById('p3-instruction').textContent =
+    data.type === 'mcq' ? 'Click the correct form for each pronoun.' : 'Type the correct form for each pronoun.';
+  document.getElementById('p3-feedback').classList.add('hidden');
+  document.getElementById('p3-check-btn').classList.remove('hidden');
+  document.getElementById('p3-next-btn').classList.add('hidden');
+
+  const rows = document.getElementById('p3-rows');
+  rows.innerHTML = '';
+
+  data.rows.forEach((row, i) => {
+    const div = document.createElement('div');
+    div.className = 'conj-row';
+    div.id = `p3-row-${i}`;
+
+    const pro = document.createElement('div');
+    pro.className = 'conj-pronoun';
+    pro.textContent = row.pronoun;
+
+    const eq = document.createElement('div');
+    eq.className = 'conj-equals';
+    eq.textContent = '→';
+
+    const tick = document.createElement('div');
+    tick.className = 'conj-tick';
+    tick.id = `p3-tick-${i}`;
+
+    div.appendChild(pro);
+    div.appendChild(eq);
+
+    if (data.type === 'mcq') {
+      const choices = document.createElement('div');
+      choices.className = 'conj-choices';
+      row.choices.forEach(c => {
+        const b = document.createElement('button');
+        b.className = 'conj-choice';
+        b.textContent = c;
+        b.dataset.value = c;
+        b.dataset.row = i;
+        b.onclick = () => p3SelectChoice(b, i);
+        choices.appendChild(b);
+      });
+      div.appendChild(choices);
+    } else {
+      const inp = document.createElement('input');
+      inp.className = 'conj-input';
+      inp.type = 'text';
+      inp.placeholder = 'type here...';
+      inp.id = `p3-input-${i}`;
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') p3Check(); });
+      div.appendChild(inp);
+    }
+
+    div.appendChild(tick);
+    rows.appendChild(div);
+  });
+}
+
+function p3SelectChoice(btn, rowIdx) {
+  if (p3Checked) return;
+  const siblings = document.querySelectorAll(`.conj-choice[data-row="${rowIdx}"]`);
+  siblings.forEach(b => b.classList.remove('selected-correct','selected-wrong'));
+  btn.classList.add('selected-correct');
+}
+
+function p3Check() {
+  if (p3Checked) return;
+  p3Checked = true;
+  const data = p3VerbSets[p3Round];
+  let roundScore = 0;
+
+  data.rows.forEach((row, i) => {
+    const rowEl = document.getElementById(`p3-row-${i}`);
+    const tick = document.getElementById(`p3-tick-${i}`);
+    let userAnswer = '';
+
+    if (data.type === 'mcq') {
+      const selected = document.querySelector(`.conj-choice[data-row="${i}"].selected-correct`);
+      userAnswer = selected ? selected.dataset.value : '';
+      // disable all
+      document.querySelectorAll(`.conj-choice[data-row="${i}"]`).forEach(b => {
+        b.disabled = true;
+        if (b.dataset.value === row.answer) b.classList.add('selected-correct');
+        else b.classList.remove('selected-correct');
+        if (selected && b === selected && b.dataset.value !== row.answer) b.classList.add('selected-wrong');
+      });
+    } else {
+      const inp = document.getElementById(`p3-input-${i}`);
+      userAnswer = inp.value.trim().toLowerCase();
+      inp.disabled = true;
+      if (userAnswer === row.answer) {
+        inp.classList.add('correct');
+      } else {
+        inp.classList.add('wrong');
+        inp.value = `${userAnswer} → ${row.answer}`;
+      }
+    }
+
+    if (userAnswer === row.answer) {
+      rowEl.classList.add('correct-row');
+      tick.textContent = '✅';
+      roundScore++;
+    } else {
+      rowEl.classList.add('wrong-row');
+      tick.textContent = '❌';
+    }
+  });
+
+  const total = data.rows.length;
+  p3Score += roundScore;
+  addGlobal(roundScore);
+  document.getElementById('p3-score').textContent = p3Score;
+
+  setFeedback('p3-feedback', roundScore === total ? 'correct' : roundScore >= total * 0.6 ? 'info' : 'wrong',
+    `${roundScore} / ${total} correct for ${data.verb}.`);
+
+  document.getElementById('p3-check-btn').classList.add('hidden');
+  document.getElementById('p3-next-btn').classList.remove('hidden');
+  document.getElementById('p3-next-btn').textContent =
+    p3Round + 1 < p3VerbSets.length ? 'Next Verb →' : 'See Results 🏆';
+  if (roundScore === total) launchConfetti();
+}
+
+function p3Next() {
+  p3Round++;
+  if (p3Round >= p3VerbSets.length) {
+    p3ShowResults();
+  } else {
+    p3Render();
+  }
+}
+
+function p3ShowResults() {
+  document.getElementById('p3-game-area').classList.add('hidden');
+  const res = document.getElementById('p3-results');
+  res.classList.remove('hidden');
+  const totalPossible = p3VerbSets.reduce((a, v) => a + v.rows.length, 0);
+  document.getElementById('p3-final').textContent = `${p3Score} / ${totalPossible}`;
+  document.getElementById('p3-emoji').textContent = getEmoji(p3Score, totalPossible);
+  document.getElementById('p3-msg').textContent = getMsg(p3Score, totalPossible);
+  if (p3Score >= totalPossible * 0.8) launchConfetti();
+}
+
+function p3Restart() {
+  document.getElementById('p3-game-area').classList.remove('hidden');
+  document.getElementById('p3-results').classList.add('hidden');
+  p3Init();
+}
+
+// ══════════════════════════════════════════
+// PAGE 4 — QUESTIONS
+// ══════════════════════════════════════════
+const p4Questions = [
+  // YES/NO QUESTIONS
+  { type: 'yesno', badge: 'Yes/No Question',
+    prompt: 'Complete: ___ she like sushi?',
+    choices: ['Do she like sushi?', 'Does she like sushi?', 'Is she like sushi?', 'Did she like sushi?'],
+    answer: 'Does she like sushi?',
+    explain: 'He/She/It → use DOES in yes/no questions.' },
+  { type: 'yesno', badge: 'Yes/No Question',
+    prompt: '___ they play tennis on weekends?',
+    choices: ['Does they play tennis?', 'Do they play tennis?', 'Is they play tennis?', 'Are they play tennis?'],
+    answer: 'Do they play tennis?',
+    explain: 'I/You/We/They → use DO in yes/no questions.' },
+  { type: 'yesno', badge: 'Yes/No Question',
+    prompt: 'Choose the correct short answer: "Does he work here?" → "Yes, ___."',
+    choices: ['Yes, he do.', 'Yes, he does.', 'Yes, he is.', 'Yes, he works.'],
+    answer: 'Yes, he does.',
+    explain: 'Short answers: Yes, he/she/it DOES.' },
+  { type: 'yesno', badge: 'Yes/No Question',
+    prompt: '"Do you speak French?" → "No, ___."',
+    choices: ["No, I don't.", "No, I doesn't.", "No, I not do.", "No, I amn't."],
+    answer: "No, I don't.",
+    explain: "Negative short answer: No, I/you/we/they DON'T." },
+
+  // WH- QUESTIONS
+  { type: 'wh', badge: 'Wh- Question',
+    prompt: '___ does she live? → She lives in Tokyo.',
+    choices: ['What', 'Where', 'When', 'Who'],
+    answer: 'Where',
+    explain: 'WHERE asks about a place.' },
+  { type: 'wh', badge: 'Wh- Question',
+    prompt: '___ does he eat for breakfast? → He eats rice and eggs.',
+    choices: ['Who', 'When', 'What', 'Where'],
+    answer: 'What',
+    explain: 'WHAT asks about a thing or food.' },
+  { type: 'wh', badge: 'Wh- Question',
+    prompt: '___ does the class start? → It starts at 8 o\'clock.',
+    choices: ['Where', 'What', 'When', 'Why'],
+    answer: 'When',
+    explain: 'WHEN asks about time.' },
+  { type: 'wh', badge: 'Wh- Question',
+    prompt: '___ teaches English here? → Mr. Lee does.',
+    choices: ['What', 'Where', 'When', 'Who'],
+    answer: 'Who',
+    explain: 'WHO asks about a person. (No DO/DOES needed when WHO is the subject!)' },
+
+  // QUESTION FORMATION
+  { type: 'form', badge: 'Question Order',
+    prompt: 'Put in order: [they / do / every day / study]',
+    choices: ['Study do they every day?', 'Do they study every day?', 'Do study they every day?', 'They do study every day?'],
+    answer: 'Do they study every day?',
+    explain: 'Question order: DO/DOES + subject + base verb + rest.' },
+  { type: 'form', badge: 'Question Order',
+    prompt: 'Which question is correct?',
+    choices: ['What does she works?', 'What work she does?', 'What does she work?', 'Does what she work?'],
+    answer: 'What does she work?',
+    explain: 'Wh- questions: Wh-word + DOES + subject + BASE verb (no -s!).' },
+
+  // ERROR CORRECTION
+  { type: 'error', badge: 'Error Correction',
+    prompt: 'Find the CORRECT sentence:',
+    choices: ['Where does he lives?', 'Where does he live?', 'Where do he live?', 'Where he does live?'],
+    answer: 'Where does he live?',
+    explain: 'After DOES, use the BASE form (no -s). → does he LIVE (not lives).' },
+  { type: 'error', badge: 'Error Correction',
+    prompt: 'Which is CORRECT?',
+    choices: ["She don't like coffee.", "She doesn't likes coffee.", "She doesn't like coffee.", "She not like coffee."],
+    answer: "She doesn't like coffee.",
+    explain: "He/She/It → DOESN'T + base verb. Never add -s after doesn't." },
+];
+
+let p4Idx = 0, p4Score = 0, p4Locked = false;
+const p4TypeScores = { yesno: 0, wh: 0, form: 0, error: 0 };
+
+function p4Init() {
+  p4Idx = 0; p4Score = 0;
+  Object.keys(p4TypeScores).forEach(k => p4TypeScores[k] = 0);
+  p4Render();
+}
+
+const badgeClasses = { yesno: 'badge-yesno', wh: 'badge-wh', form: 'badge-form', error: 'badge-error' };
+const badgeLabels  = { yesno: '✅ Yes/No', wh: '💬 Wh- Question', form: '🔀 Question Order', error: '🔍 Error Correction' };
+
+function p4Render() {
+  p4Locked = false;
+  const q = p4Questions[p4Idx];
+  document.getElementById('p4-q').textContent = p4Idx + 1;
+  document.getElementById('p4-score').textContent = p4Score;
+  document.getElementById('p4-progress').style.width = (p4Idx / p4Questions.length * 100) + '%';
+  document.getElementById('p4-feedback').classList.add('hidden');
+  document.getElementById('p4-next-btn').classList.add('hidden');
+
+  document.getElementById('p4-badge').innerHTML =
+    `<div class="q-type-badge ${badgeClasses[q.type]}">${badgeLabels[q.type]}</div>`;
+
+  document.getElementById('p4-prompt').innerHTML = q.prompt.replace(/_+/, '<span class="q-blank">?</span>');
+
+  const ch = document.getElementById('p4-choices');
+  ch.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  const shuffled = [...q.choices].sort(() => Math.random() - 0.5);
+  shuffled.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'q-choice';
+    b.innerHTML = `<span class="q-letter">${letters[i]}</span>${opt}`;
+    b.dataset.answer = opt;
+    b.onclick = () => p4Answer(b, opt, q);
+    ch.appendChild(b);
+  });
+}
+
+function p4Answer(btn, chosen, q) {
+  if (p4Locked) return;
+  p4Locked = true;
+
+  document.querySelectorAll('#p4-choices .q-choice').forEach(b => {
+    b.classList.add('locked');
+    if (b.dataset.answer === q.answer) b.classList.add('correct-ans');
+  });
+
+  if (chosen === q.answer) {
+    btn.classList.add('correct-ans');
+    p4Score++;
+    p4TypeScores[q.type]++;
+    addGlobal(1);
+    document.getElementById('p4-score').textContent = p4Score;
+    setFeedback('p4-feedback', 'correct', `✅ Correct! ${q.explain}`);
+  } else {
+    btn.classList.add('wrong-ans');
+    setFeedback('p4-feedback', 'wrong', `❌ ${q.explain}`);
+  }
+
+  const nextBtn = document.getElementById('p4-next-btn');
+  nextBtn.classList.remove('hidden');
+  nextBtn.textContent = p4Idx + 1 < p4Questions.length ? 'Next →' : 'See Results 🏆';
+}
+
+function p4Next() {
+  p4Idx++;
+  if (p4Idx >= p4Questions.length) {
+    p4ShowResults();
+  } else {
+    p4Render();
+  }
+}
+
+function p4ShowResults() {
+  document.getElementById('p4-game-area').classList.add('hidden');
+  const res = document.getElementById('p4-results');
+  res.classList.remove('hidden');
+  document.getElementById('p4-final').textContent = p4Score;
+  document.getElementById('p4-emoji').textContent = getEmoji(p4Score, p4Questions.length);
+  document.getElementById('p4-msg').textContent = getMsg(p4Score, p4Questions.length);
+
+  const breakdown = document.getElementById('p4-breakdown');
+  const counts = { yesno: 4, wh: 4, form: 2, error: 2 };
+  breakdown.innerHTML = Object.entries(p4TypeScores).map(([type, sc]) =>
+    `<div class="rb-item">${badgeLabels[type]}<br><strong>${sc}/${counts[type]}</strong></div>`
+  ).join('');
+
+  if (p4Score >= 10) launchConfetti();
+}
+
+function p4Restart() {
+  document.getElementById('p4-game-area').classList.remove('hidden');
+  document.getElementById('p4-results').classList.add('hidden');
+  p4Init();
+}
+
+// ── BOOT ──
+p1Init();
+p2Init();
+p3Init();
+p4Init();
+</script>
+</body>
+</html>
