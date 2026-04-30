@@ -3,907 +3,1001 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Present Simple Quest 🎮</title>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>Where's Your Home? 🏠</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
-  --navy:   #0d1b2a;
-  --dark:   #112233;
-  --card:   #1a2e44;
-  --card2:  #1e3550;
-  --border: #2a4a6a;
-  --p1: #ffd93d;
-  --p2: #6bcb77;
-  --p3: #c77dff;
-  --red: #ff6b6b;
-  --white: #f0f6ff;
-  --muted: #7a9bb5;
-  --glow: 0 0 24px rgba(255,255,255,0.06);
-  --radius: 16px;
-  --font-head: 'Fredoka One', cursive;
-  --font-body: 'Nunito', sans-serif;
+  --sky: #5BC8F5;
+  --sky-light: #E8F7FF;
+  --sun: #FFD93D;
+  --grass: #6BCB77;
+  --coral: #FF6B6B;
+  --purple: #A78BFA;
+  --white: #FFFFFF;
+  --card-shadow: 0 12px 40px rgba(0,0,0,0.15);
+  --correct: #6BCB77;
+  --wrong: #FF6B6B;
 }
-
-html, body { height: 100%; background: var(--navy); color: var(--white); font-family: var(--font-body); }
-
-body::before {
-  content: '';
-  position: fixed; inset: 0; z-index: 0;
-  background-image:
-    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.4) 0%, transparent 100%),
-    radial-gradient(1px 1px at 80% 10%, rgba(255,255,255,0.3) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 50% 60%, rgba(255,255,255,0.2) 0%, transparent 100%),
-    radial-gradient(1px 1px at 10% 80%, rgba(255,255,255,0.35) 0%, transparent 100%),
-    radial-gradient(1px 1px at 90% 70%, rgba(255,255,255,0.25) 0%, transparent 100%),
-    radial-gradient(1px 1px at 35% 85%, rgba(255,255,255,0.3) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 70% 40%, rgba(255,255,255,0.2) 0%, transparent 100%);
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: linear-gradient(180deg, #87CEEB 0%, #C9EEFF 55%, #A8E6A3 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+  position: relative;
+}
+/* Floating clouds */
+.cloud {
+  position: fixed;
+  background: white;
+  border-radius: 50px;
+  opacity: 0.75;
   pointer-events: none;
+  z-index: 0;
+}
+.cloud::before, .cloud::after {
+  content: '';
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+}
+.cloud-1 { width: 140px; height: 55px; top: 8%; left: 5%; animation: drift1 35s linear infinite; }
+.cloud-1::before { width: 75px; height: 75px; top: -35px; left: 15px; }
+.cloud-1::after  { width: 55px; height: 55px; top: -20px; left: 60px; }
+.cloud-2 { width: 100px; height: 40px; top: 15%; right: 8%; animation: drift2 45s linear infinite; }
+.cloud-2::before { width: 55px; height: 55px; top: -28px; left: 10px; }
+.cloud-2::after  { width: 40px; height: 40px; top: -18px; left: 45px; }
+.cloud-3 { width: 120px; height: 45px; top: 3%; left: 55%; animation: drift1 55s linear infinite reverse; }
+.cloud-3::before { width: 60px; height: 60px; top: -30px; left: 12px; }
+.cloud-3::after  { width: 45px; height: 45px; top: -20px; left: 55px; }
+@keyframes drift1 { 0%{transform:translateX(-200px)} 100%{transform:translateX(120vw)} }
+@keyframes drift2 { 0%{transform:translateX(200px)} 100%{transform:translateX(-120vw)} }
+
+/* Game container */
+#app {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 640px;
+  padding: 16px;
+}
+.screen { display: none; animation: slideIn 0.4s ease; }
+.screen.active { display: block; }
+@keyframes slideIn { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:translateY(0)} }
+
+/* Game card */
+.card {
+  background: white;
+  border-radius: 32px;
+  padding: 36px 32px;
+  box-shadow: var(--card-shadow);
+  text-align: center;
+  border: 4px solid var(--sky);
+}
+.card-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 2.2rem;
+  color: #2563EB;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+.card-sub {
+  font-size: 1rem;
+  color: #64748B;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+.emoji-hero { font-size: 4rem; margin-bottom: 14px; display: block; }
+
+/* Progress bar */
+.progress-wrap { background: #E5E7EB; border-radius: 20px; height: 14px; margin-bottom: 24px; overflow: hidden; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, #6BCB77, #5BC8F5); border-radius: 20px; transition: width 0.5s ease; }
+
+/* Score chip */
+.score-chip {
+  display: inline-block;
+  background: var(--sun);
+  color: #92400E;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  padding: 6px 18px;
+  border-radius: 20px;
+  margin-bottom: 20px;
 }
 
-.app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+/* Buttons */
+.btn {
+  display: inline-block;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.3rem;
+  padding: 14px 36px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+}
+.btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+.btn-primary { background: #2563EB; color: white; }
+.btn-primary:hover { background: #1D4ED8; }
+.btn-green  { background: #16A34A; color: white; }
+.btn-coral  { background: #EF4444; color: white; }
 
-/* ══ WELCOME SCREEN ══ */
-#welcome-screen {
-  position: fixed; inset: 0; z-index: 100;
-  background: var(--navy);
+/* Name input */
+.name-input {
+  width: 100%;
+  padding: 16px 20px;
+  font-size: 1.3rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  border: 3px solid #93C5FD;
+  border-radius: 20px;
+  outline: none;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #1E3A5F;
+}
+.name-input:focus { border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+
+/* Vocab card */
+.vocab-card {
+  background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+  border: 3px solid #93C5FD;
+  border-radius: 24px;
+  padding: 28px 24px;
+  margin: 0 auto 20px;
+  max-width: 420px;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.vocab-card:hover { transform: scale(1.02); }
+.vocab-word {
+  font-family: 'Fredoka One', cursive;
+  font-size: 2rem;
+  color: #1D4ED8;
+  text-transform: capitalize;
+}
+.vocab-emoji { font-size: 3.5rem; margin: 8px 0; display: block; }
+.zh-bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--sun);
+  color: #7C2D12;
+  padding: 8px 18px;
+  border-radius: 50px;
+  margin: 10px auto;
+  font-weight: 900;
+  font-size: 1.1rem;
+}
+.zh-text { font-size: 1.4rem; }
+.pinyin { font-size: 0.85rem; color: #92400E; margin-top: 2px; }
+.vocab-def {
+  font-size: 1rem;
+  color: #374151;
+  font-weight: 700;
+  margin-top: 12px;
+  background: #F0FDF4;
+  border-radius: 12px;
+  padding: 10px;
+}
+.vocab-counter {
+  font-size: 0.9rem;
+  color: #6B7280;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+/* Quiz */
+.question-text {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #1E293B;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+.question-hint {
+  background: #FEF9C3;
+  border: 2px dashed #FDE047;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 0.95rem;
+  color: #713F12;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: inline-block;
+}
+.choices-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+.choice-btn {
+  padding: 14px 10px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 1.05rem;
+  border: 3px solid #93C5FD;
+  border-radius: 16px;
+  cursor: pointer;
+  background: #EFF6FF;
+  color: #1E3A5F;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.choice-btn:hover:not(:disabled) { background: #DBEAFE; border-color: #2563EB; transform: scale(1.03); }
+.choice-btn.correct  { background: #DCFCE7; border-color: #16A34A; color: #166534; animation: pulse 0.4s; }
+.choice-btn.wrong    { background: #FEE2E2; border-color: #DC2626; color: #991B1B; animation: shake 0.4s; }
+.choice-btn:disabled { cursor: default; }
+.choice-zh { font-size: 1rem; color: #6B7280; }
+@keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.06)} 100%{transform:scale(1)} }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+/* Matching quiz */
+.match-grid {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+  justify-content: center;
+}
+.match-col { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.match-btn {
+  padding: 12px 8px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+  border-radius: 14px;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.match-word { background: #EDE9FE; color: #4C1D95; border-color: #C4B5FD; }
+.match-word:hover:not(:disabled):not(.used) { background: #DDD6FE; border-color: #7C3AED; }
+.match-word.selected { background: #7C3AED; color: white; border-color: #5B21B6; }
+.match-def { background: #FEF3C7; color: #78350F; border-color: #FDE68A; font-size: 0.88rem; }
+.match-def:hover:not(:disabled):not(.used) { background: #FDE68A; border-color: #D97706; }
+.match-def.selected { background: #D97706; color: white; border-color: #92400E; }
+.match-btn.matched-ok { background: #DCFCE7; border-color: #16A34A; color: #166534; cursor: default; animation: pulse 0.4s; }
+.match-btn.matched-fail { animation: shake 0.4s; }
+.match-btn.used { opacity: 0.45; cursor: default; }
+
+/* Address form */
+.address-field {
+  margin-bottom: 16px;
+  text-align: left;
+}
+.address-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  font-size: 1rem;
+  color: #1E3A5F;
+  margin-bottom: 6px;
+}
+.address-zh { font-size: 0.9rem; color: #6B7280; font-weight: 700; }
+.address-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 1.1rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  border: 3px solid #93C5FD;
+  border-radius: 14px;
+  outline: none;
+  color: #1E3A5F;
+}
+.address-input:focus { border-color: #2563EB; }
+
+/* Where do you live */
+.where-choices {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 20px 0;
+}
+.where-btn {
+  padding: 20px 10px;
+  border-radius: 20px;
+  border: 4px solid transparent;
+  cursor: pointer;
+  background: #F1F5F9;
+  transition: all 0.15s;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+}
+.where-btn:hover { transform: scale(1.05); }
+.where-btn.selected { border-color: #2563EB; background: #DBEAFE; }
+.where-emoji { font-size: 2.2rem; display: block; margin-bottom: 6px; }
+.where-eng { font-size: 0.95rem; color: #1E293B; }
+.where-zh  { font-size: 0.85rem; color: #64748B; }
+
+/* Feedback popup */
+.feedback-overlay {
+  position: fixed; inset: 0; z-index: 50;
   display: flex; align-items: center; justify-content: center;
-  animation: fadeIn 0.4s ease;
+  background: rgba(0,0,0,0.35);
+  animation: fadeIn 0.2s;
 }
-.welcome-box {
-  background: var(--card); border: 2px solid var(--border);
-  border-radius: 24px; padding: 48px 44px;
-  max-width: 480px; width: 90%; text-align: center;
-  box-shadow: 0 8px 48px rgba(0,0,0,0.4);
+.feedback-box {
+  background: white;
+  border-radius: 28px;
+  padding: 36px 40px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  max-width: 340px;
+  animation: popIn 0.3s;
 }
-.welcome-rocket { font-size: 4rem; display: block; margin-bottom: 10px; animation: bounce 1.2s ease infinite; }
-@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
-.welcome-title { font-family: var(--font-head); font-size: 2.4rem; margin-bottom: 6px; }
-.welcome-title span { color: var(--p1); }
-.welcome-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 24px; }
-.welcome-games { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
-.wg-tag { font-size: 0.78rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
-.wg-1 { background: rgba(255,217,61,0.15); color: var(--p1); border: 1px solid var(--p1); }
-.wg-2 { background: rgba(107,203,119,0.15); color: var(--p2); border: 1px solid var(--p2); }
-.wg-3 { background: rgba(199,125,255,0.15); color: var(--p3); border: 1px solid var(--p3); }
-.welcome-label { font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 10px; display: block; text-align: left; }
-.welcome-input {
-  width: 100%; padding: 14px 18px;
-  background: var(--card2); border: 2px solid var(--border);
-  border-radius: 12px; color: var(--white);
-  font-family: var(--font-body); font-weight: 700; font-size: 1.15rem;
-  outline: none; transition: border-color 0.2s; text-align: center;
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+@keyframes popIn { from{transform:scale(0.7)} to{transform:scale(1)} }
+.feedback-emoji { font-size: 4rem; display: block; margin-bottom: 10px; }
+.feedback-title { font-family: 'Fredoka One', cursive; font-size: 2rem; margin-bottom: 6px; }
+.feedback-msg { font-size: 1rem; font-weight: 700; color: #374151; margin-bottom: 20px; }
+.feedback-pts { font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: #16A34A; }
+
+/* Results */
+.result-score {
+  font-family: 'Fredoka One', cursive;
+  font-size: 4rem;
+  color: #2563EB;
+  line-height: 1;
 }
-.welcome-input::placeholder { color: var(--muted); font-weight: 600; }
-.welcome-input:focus { border-color: var(--p1); }
-.welcome-error { color: var(--red); font-size: 0.85rem; font-weight: 700; margin-top: 8px; display: none; }
-.btn-start {
-  width: 100%; padding: 16px; font-size: 1.1rem;
-  background: linear-gradient(135deg, var(--p1), #ffb800);
-  color: var(--navy); border: none; border-radius: 14px;
-  font-family: var(--font-body); font-weight: 800; cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s; margin-top: 18px;
+.result-label { font-size: 1rem; color: #64748B; font-weight: 700; margin-bottom: 16px; }
+.stars { font-size: 2.5rem; letter-spacing: 4px; margin-bottom: 20px; display: block; }
+.result-msg { font-size: 1.1rem; font-weight: 800; color: #374151; margin-bottom: 24px; background: #F0FDF4; border-radius: 16px; padding: 14px; }
+
+/* Scoreboard */
+.scoreboard-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+.scoreboard-table th {
+  background: #2563EB; color: white;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.05rem; padding: 10px 12px;
 }
-.btn-start:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(255,217,61,0.35); }
+.scoreboard-table th:first-child { border-radius: 12px 0 0 0; }
+.scoreboard-table th:last-child  { border-radius: 0 12px 0 0; }
+.scoreboard-table td { padding: 10px 12px; font-weight: 700; font-size: 1rem; border-bottom: 2px solid #E5E7EB; }
+.scoreboard-table tr:nth-child(even) td { background: #F8FAFC; }
+.rank-1 td { background: #FFFBEB !important; color: #78350F; }
+.rank-2 td { background: #F1F5F9 !important; }
+.rank-3 td { background: #FFF7ED !important; }
+.rank-medal { font-size: 1.3rem; }
+.no-scores { color: #9CA3AF; font-weight: 700; padding: 30px; font-size: 1.1rem; }
+.btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
 
-/* ══ GRAND FINALE ══ */
-#finale-screen {
-  display: none; position: fixed; inset: 0; z-index: 200;
-  background: var(--navy);
-  align-items: center; justify-content: center;
-  padding: 24px; animation: fadeIn 0.5s ease;
-  overflow-y: auto;
+/* Confetti */
+.confetti-piece {
+  position: fixed;
+  width: 12px; height: 12px;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 100;
+  animation: confettiFall 1.2s ease-in forwards;
 }
-#finale-screen.show { display: flex; }
-.finale-box {
-  background: var(--card); border: 2px solid var(--p1);
-  border-radius: 28px; padding: 52px 44px;
-  max-width: 540px; width: 100%; text-align: center;
-  box-shadow: 0 0 60px rgba(255,217,61,0.2);
+@keyframes confettiFall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
-.finale-trophies { font-size: 3.2rem; margin-bottom: 12px; letter-spacing: 8px; }
-.finale-title  { font-family: var(--font-head); font-size: 2.4rem; color: var(--p1); margin-bottom: 4px; }
-.finale-name   { font-family: var(--font-head); font-size: 2rem; color: var(--white); margin-bottom: 20px; }
-.finale-score  { font-family: var(--font-head); font-size: 4.5rem; color: var(--p1); line-height: 1; }
-.finale-slabel { font-size: 0.8rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
-.finale-msg    { font-size: 1rem; color: var(--muted); max-width: 380px; margin: 0 auto 24px; line-height: 1.7; }
-.finale-breakdown { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
-.fb-item { background: var(--card2); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 18px; font-size: 0.85rem; font-weight: 700; }
-.fb-item strong { display: block; font-size: 1.1rem; margin-top: 2px; color: var(--p1); }
 
-/* ══ NAV ══ */
-.nav {
-  display: flex; align-items: center; background: var(--dark);
-  border-bottom: 2px solid var(--border); padding: 0 24px;
-  flex-shrink: 0; flex-wrap: wrap;
-}
-.nav-logo { font-family: var(--font-head); font-size: 1.4rem; color: var(--white); padding: 14px 20px 14px 0; border-right: 2px solid var(--border); margin-right: 8px; white-space: nowrap; }
-.nav-logo span { color: var(--p1); }
-.nav-tabs { display: flex; flex: 1; flex-wrap: wrap; }
-.nav-tab {
-  font-family: var(--font-body); font-weight: 700; font-size: 0.82rem;
-  padding: 14px 18px; cursor: pointer; border: none; background: transparent;
-  color: var(--muted); letter-spacing: 0.4px; transition: color 0.2s, border-bottom 0.2s;
-  border-bottom: 3px solid transparent; text-transform: uppercase; white-space: nowrap;
-}
-.nav-tab .tab-num {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 22px; height: 22px; border-radius: 50%; font-size: 0.72rem; font-weight: 800;
-  background: var(--border); color: var(--muted); margin-right: 7px;
-  transition: background 0.2s, color 0.2s;
-}
-.nav-tab.active { color: var(--white); }
-.nav-tab.active .tab-num { color: var(--navy); }
-.nav-tab[data-page="1"].active { border-bottom-color: var(--p1); }
-.nav-tab[data-page="1"].active .tab-num { background: var(--p1); }
-.nav-tab[data-page="2"].active { border-bottom-color: var(--p2); }
-.nav-tab[data-page="2"].active .tab-num { background: var(--p2); }
-.nav-tab[data-page="3"].active { border-bottom-color: var(--p3); }
-.nav-tab[data-page="3"].active .tab-num { background: var(--p3); }
-.nav-player { margin-left: auto; display: flex; align-items: center; gap: 8px; padding: 8px 0; }
-.player-tag { background: var(--card); border: 2px solid var(--border); border-radius: 20px; padding: 4px 14px; font-size: 0.85rem; font-weight: 800; color: var(--p1); }
-.score-tag  { background: var(--card); border: 2px solid var(--border); border-radius: 20px; padding: 4px 14px; font-size: 0.85rem; font-weight: 800; }
-.score-tag span { color: var(--p1); }
-
-/* ══ PAGES ══ */
-.page { display: none; flex: 1; padding: 28px 24px; max-width: 900px; width: 100%; margin: 0 auto; }
-.page.active { display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.35s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.page-header { text-align: center; }
-.page-title { font-family: var(--font-head); font-size: 2.1rem; line-height: 1.1; }
-.page-subtitle { color: var(--muted); font-size: 0.95rem; margin-top: 6px; }
-.page-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--glow); }
-
-.game-status { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
-.round-info { font-size: 0.85rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-.progress-bar { flex: 1; max-width: 240px; height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
-.game-score { font-weight: 800; font-size: 0.9rem; }
-
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 24px; border-radius: 50px; border: none; font-family: var(--font-body); font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s; }
-.btn:active { transform: scale(0.96); }
-.btn-primary { background: var(--p1); color: var(--navy); }
-.btn-primary:hover { box-shadow: 0 0 18px rgba(255,217,61,0.4); }
-.btn-ghost { background: var(--card2); color: var(--white); border: 1.5px solid var(--border); }
-.btn-ghost:hover { border-color: var(--muted); }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn-next-page { background: linear-gradient(135deg, var(--p2), #3da84a); color: var(--navy); border: none; border-radius: 50px; padding: 12px 26px; font-family: var(--font-body); font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
-.btn-next-page:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(107,203,119,0.35); }
-
-.feedback-box { border-radius: 12px; padding: 14px 18px; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 10px; animation: popIn 0.25s ease; }
-@keyframes popIn { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.feedback-box.correct { background: rgba(107,203,119,0.18); border: 1.5px solid var(--p2); color: var(--p2); }
-.feedback-box.wrong   { background: rgba(255,107,107,0.18); border: 1.5px solid var(--red); color: var(--red); }
-.feedback-box.info    { background: rgba(199,125,255,0.18); border: 1.5px solid var(--p3); color: var(--p3); }
-
-.results-screen { text-align: center; padding: 30px 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
-.results-emoji { font-size: 4rem; animation: bounce 0.6s ease; }
-.results-title { font-family: var(--font-head); font-size: 1.8rem; }
-.results-name  { font-family: var(--font-head); font-size: 1.6rem; color: var(--p1); margin-top: -8px; }
-.results-score { font-size: 3.5rem; font-weight: 800; color: var(--p1); font-family: var(--font-head); }
-.results-msg   { color: var(--muted); font-size: 0.97rem; max-width: 360px; line-height: 1.65; }
-.results-breakdown { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
-.rb-item { background: var(--card2); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 20px; font-size: 0.88rem; }
-
-/* ══ PAGE 1 — PRONOUN CHOICE ══ */
-.sentence-display { text-align: center; padding: 20px; font-size: 1.35rem; font-weight: 700; line-height: 1.7; background: var(--card2); border-radius: 14px; border: 1.5px solid var(--border); }
-.sentence-display .blank { display: inline-block; min-width: 90px; border-bottom: 3px solid var(--p1); color: var(--p1); font-family: var(--font-head); font-size: 1.45rem; text-align: center; padding: 0 8px; margin: 0 4px; vertical-align: bottom; }
-.sentence-display .sentence-hint { display: block; font-size: 0.8rem; color: var(--muted); font-weight: 600; margin-top: 8px; font-style: italic; }
-.choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.choice-btn { padding: 16px 20px; border-radius: 14px; border: 2px solid var(--border); background: var(--card2); color: var(--white); cursor: pointer; font-family: var(--font-body); font-weight: 700; font-size: 1.05rem; text-align: center; transition: all 0.18s; }
-.choice-btn:hover:not(:disabled):not(.locked) { border-color: var(--p3); background: rgba(199,125,255,0.1); transform: translateY(-2px); }
-.choice-btn.correct-ans { border-color: var(--p2); background: rgba(107,203,119,0.16); color: var(--p2); }
-.choice-btn.wrong-ans   { border-color: var(--red); background: rgba(255,107,107,0.14); color: var(--red); }
-.choice-btn.locked { cursor: default; }
-
-/* ══ PAGE 2 — CONJUGATE ══ */
-.conj-verb-header { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.conj-verb-tag { font-family: var(--font-head); font-size: 1.5rem; background: rgba(107,203,119,0.15); border: 2px solid rgba(107,203,119,0.35); color: var(--p2); border-radius: 50px; padding: 5px 22px; }
-.conj-instruction { font-size: 0.9rem; color: var(--muted); font-weight: 600; }
-.conj-row { display: flex; align-items: center; gap: 12px; background: var(--card2); border-radius: 12px; padding: 12px 16px; margin-bottom: 8px; border: 1.5px solid var(--border); transition: border-color 0.2s; }
-.conj-row.correct-row { border-color: var(--p2); }
-.conj-row.wrong-row   { border-color: var(--red); }
-.conj-pronoun { font-family: var(--font-head); font-size: 1.1rem; color: var(--p1); min-width: 52px; }
-.conj-equals  { color: var(--muted); font-size: 0.85rem; }
-.conj-input { flex: 1; background: var(--card); border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 14px; color: var(--white); font-family: var(--font-body); font-weight: 700; font-size: 1rem; outline: none; transition: border-color 0.18s; }
-.conj-input:focus { border-color: var(--p2); }
-.conj-input.correct { border-color: var(--p2); background: rgba(107,203,119,0.1); color: var(--p2); }
-.conj-input.wrong   { border-color: var(--red); background: rgba(255,107,107,0.1); color: var(--red); }
-.conj-tick { font-size: 1.1rem; min-width: 24px; text-align: center; }
-.conj-choices { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
-.conj-choice { padding: 8px 16px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--card); color: var(--white); font-family: var(--font-body); font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.15s; }
-.conj-choice:hover:not(:disabled) { border-color: var(--p2); color: var(--p2); }
-.conj-choice.selected-correct { border-color: var(--p2); background: rgba(107,203,119,0.15); color: var(--p2); }
-.conj-choice.selected-wrong   { border-color: var(--red); background: rgba(255,107,107,0.12); color: var(--red); }
-.conj-choice:disabled { opacity: 0.45; cursor: default; }
-
-/* ══ PAGE 3 — QUESTIONS ══ */
-.q-type-badge { display: inline-block; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 3px 12px; border-radius: 20px; margin-bottom: 10px; }
-.badge-yesno { background: rgba(107,203,119,0.2); color: var(--p2); border: 1px solid var(--p2); }
-.badge-wh    { background: rgba(199,125,255,0.2); color: var(--p3); border: 1px solid var(--p3); }
-.badge-form  { background: rgba(255,217,61,0.2);  color: var(--p1); border: 1px solid var(--p1); }
-.badge-error { background: rgba(255,107,107,0.2); color: var(--red); border: 1px solid var(--red); }
-.q-prompt { font-size: 1.2rem; font-weight: 700; line-height: 1.6; background: var(--card2); border-radius: 12px; padding: 18px 20px; border: 1.5px solid var(--border); margin-bottom: 16px; }
-.q-prompt .q-blank { display: inline-block; min-width: 100px; border-bottom: 3px solid var(--p3); color: var(--p3); font-family: var(--font-head); font-size: 1.25rem; padding: 0 8px; margin: 0 4px; vertical-align: bottom; }
-.q-choices { display: flex; flex-direction: column; gap: 9px; }
-.q-choice { padding: 14px 18px; border-radius: 12px; border: 2px solid var(--border); background: var(--card2); color: var(--white); cursor: pointer; font-family: var(--font-body); font-weight: 700; font-size: 0.97rem; text-align: left; transition: all 0.18s; display: flex; align-items: center; gap: 12px; }
-.q-choice .q-letter { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-size: 0.78rem; background: var(--border); flex-shrink: 0; transition: background 0.15s; }
-.q-choice:hover:not(.locked) { border-color: var(--p3); transform: translateX(4px); }
-.q-choice.correct-ans { border-color: var(--p2); background: rgba(107,203,119,0.1); color: var(--p2); }
-.q-choice.correct-ans .q-letter { background: var(--p2); color: var(--navy); }
-.q-choice.wrong-ans   { border-color: var(--red); background: rgba(255,107,107,0.1); color: var(--red); }
-.q-choice.wrong-ans .q-letter { background: var(--red); color: var(--navy); }
-.q-choice.locked { cursor: default; }
-
-/* ══ CONFETTI ══ */
-.confetti { position: fixed; pointer-events: none; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; }
-.conf-piece { position: absolute; width: 8px; height: 8px; border-radius: 2px; animation: confFall linear forwards; }
-@keyframes confFall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
-
-/* ══ UTILS ══ */
-.hidden { display: none !important; }
-.mt-10 { margin-top: 10px; }
-.mt-16 { margin-top: 16px; }
-.flex { display: flex; }
-.items-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--dark); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-
-@media (max-width: 560px) {
-  .choices-grid { grid-template-columns: 1fr 1fr; }
-  .nav-tab { font-size: 0.72rem; padding: 12px 8px; }
-  .page-title { font-size: 1.6rem; }
-  .nav-player { display: none; }
-  .welcome-box { padding: 32px 22px; }
-  .finale-box  { padding: 36px 22px; }
-}
+/* Divider */
+.divider { height: 3px; background: linear-gradient(90deg,#93C5FD,#A5F3FC,#93C5FD); border-radius: 4px; margin: 20px 0; }
 </style>
 </head>
 <body>
-<div class="app">
 
-<!-- ══ WELCOME SCREEN ══ -->
-<div id="welcome-screen">
-  <div class="welcome-box">
-    <span class="welcome-rocket">🚀</span>
-    <div class="welcome-title">Present <span>Quest</span></div>
-    <div class="welcome-sub">3 fun games to master the present simple!</div>
-    <div class="welcome-games">
-      <span class="wg-tag wg-1">1 · Pick the Pronoun</span>
-      <span class="wg-tag wg-2">2 · Conjugate!</span>
-      <span class="wg-tag wg-3">3 · Questions</span>
-    </div>
-    <label class="welcome-label" for="name-input">What's your name?</label>
-    <input id="name-input" class="welcome-input" type="text"
-      placeholder="Type your name here..." maxlength="30" autocomplete="off"
-      onkeydown="if(event.key==='Enter') startGame()">
-    <div class="welcome-error" id="name-error">Please enter your name to start! 😊</div>
-    <button class="btn-start" onclick="startGame()">🎮 Start the Quest!</button>
-  </div>
-</div>
+<!-- Floating clouds -->
+<div class="cloud cloud-1"></div>
+<div class="cloud cloud-2"></div>
+<div class="cloud cloud-3"></div>
 
-<!-- ══ GRAND FINALE ══ -->
-<div id="finale-screen">
-  <div class="finale-box">
-    <div class="finale-trophies">🏆🌟🎉</div>
-    <div class="finale-title">Amazing job,</div>
-    <div class="finale-name" id="finale-name"></div>
-    <div class="finale-score" id="finale-score"></div>
-    <div class="finale-slabel" id="finale-slabel"></div>
-    <div class="finale-msg" id="finale-msg"></div>
-    <div class="finale-breakdown" id="finale-breakdown"></div>
-    <button class="btn-start" style="max-width:280px;margin:0 auto;" onclick="restartAll()">🔄 Play Again</button>
-  </div>
-</div>
+<div id="app">
 
-<!-- ══ NAV ══ -->
-<nav class="nav">
-  <div class="nav-logo">Present <span>Quest</span></div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" data-page="1" onclick="goPage(1)">
-      <span class="tab-num">1</span>Pick the Pronoun
-    </button>
-    <button class="nav-tab" data-page="2" onclick="goPage(2)">
-      <span class="tab-num">2</span>Conjugate!
-    </button>
-    <button class="nav-tab" data-page="3" onclick="goPage(3)">
-      <span class="tab-num">3</span>Questions
-    </button>
-  </div>
-  <div class="nav-player">
-    <div class="player-tag" id="nav-player-name">Player</div>
-    <div class="score-tag">⭐ <span id="global-score">0</span></div>
-  </div>
-</nav>
-
-<!-- ════════ PAGE 1 ════════ -->
-<div class="page active" id="page-1">
-  <div class="page-header">
-    <div class="page-title" style="color:var(--p1)">🤔 Pick the Pronoun</div>
-    <div class="page-subtitle">Choose the correct pronoun to complete each sentence.</div>
-  </div>
-  <div class="page-card">
-    <div class="game-status">
-      <div class="round-info">Question <span id="p1-q">1</span> / 10</div>
-      <div class="progress-bar"><div class="progress-fill" id="p1-progress" style="width:0%;background:var(--p1)"></div></div>
-      <div class="game-score" style="color:var(--p1)">⭐ <span id="p1-score">0</span></div>
+  <!-- ═══════════════ WELCOME SCREEN ═══════════════ -->
+  <div id="screen-welcome" class="screen active">
+    <div class="card">
+      <span class="emoji-hero">🏠</span>
+      <div class="card-title">Where's Your Home?</div>
+      <div class="card-sub">你住在哪裡？ — A Learning Adventure!</div>
+      <div class="divider"></div>
+      <p style="font-weight:800;color:#374151;margin-bottom:14px;font-size:1.05rem">
+        👋 What is your name? 你叫什麼名字？
+      </p>
+      <input class="name-input" id="playerName" type="text" placeholder="Type your name here! ✏️" maxlength="30">
+      <br>
+      <button class="btn btn-primary" onclick="startGame()">Let's Go! 🚀</button>
+      <p style="margin-top:16px;font-size:0.88rem;color:#9CA3AF;font-weight:700">
+        🏆 Earn up to 100 points!
+      </p>
     </div>
   </div>
-  <div class="page-card" id="p1-game-area">
-    <div class="sentence-display" id="p1-sentence-display"></div>
-    <div class="choices-grid mt-16" id="p1-choices"></div>
-    <div id="p1-feedback" class="hidden mt-10"></div>
-    <div class="flex justify-between items-center mt-16">
-      <div></div>
-      <button class="btn btn-primary hidden" id="p1-next-btn" onclick="p1Next()">Next →</button>
+
+  <!-- ═══════════════ VOCAB SCREEN ═══════════════ -->
+  <div id="screen-vocab" class="screen">
+    <div class="card">
+      <div class="score-chip">⭐ <span id="vocab-score">0</span> pts</div>
+      <div class="card-title">📚 Word Time!</div>
+      <div class="card-sub">學單詞 — Learn the words!</div>
+      <div class="progress-wrap"><div class="progress-bar" id="vocab-progress" style="width:0%"></div></div>
+      <div class="vocab-counter" id="vocab-counter">Word 1 of 8</div>
+      <div id="vocab-display"></div>
+      <button class="btn btn-primary" id="vocab-next-btn" onclick="nextVocab()" style="margin-top:10px">
+        Next Word ➡️
+      </button>
     </div>
   </div>
-  <div class="page-card hidden" id="p1-results">
-    <div class="results-screen">
-      <div class="results-emoji" id="p1-emoji">🌟</div>
-      <div class="results-title">Great work,</div>
-      <div class="results-name" id="p1-results-name"></div>
-      <div class="results-score"><span id="p1-final">0</span> / 10</div>
-      <div class="results-msg" id="p1-msg"></div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
-        <button class="btn btn-ghost" onclick="p1Restart()">🔄 Try Again</button>
-        <button class="btn-next-page" onclick="goPage(2)">Next: Conjugate! →</button>
+
+  <!-- ═══════════════ QUIZ 1: Fill in Blank ═══════════════ -->
+  <div id="screen-quiz1" class="screen">
+    <div class="card">
+      <div class="score-chip">⭐ <span id="q1-score">0</span> pts</div>
+      <div class="card-title">✏️ Fill in the Blank!</div>
+      <div class="card-sub">填空題 — Pick the right word!</div>
+      <div class="progress-wrap"><div class="progress-bar" id="q1-progress" style="width:0%"></div></div>
+      <div id="q1-display"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ QUIZ 2: Matching ═══════════════ -->
+  <div id="screen-quiz2" class="screen">
+    <div class="card">
+      <div class="score-chip">⭐ <span id="q2-score">0</span> pts</div>
+      <div class="card-title">🔗 Match It!</div>
+      <div class="card-sub">配對 — Tap word, then tap meaning!</div>
+      <div class="progress-wrap"><div class="progress-bar" id="q2-progress" style="width:100%"></div></div>
+      <div id="q2-display"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ QUIZ 3: My Address ═══════════════ -->
+  <div id="screen-quiz3" class="screen">
+    <div class="card">
+      <div class="score-chip">⭐ <span id="q3-score">0</span> pts</div>
+      <span class="emoji-hero">🏡</span>
+      <div class="card-title">My Address!</div>
+      <div class="card-sub">我的地址 — Write where YOU live!</div>
+      <div style="background:#FEF3C7;border:2px dashed #FDE047;border-radius:14px;padding:12px 16px;margin-bottom:20px;font-size:0.95rem;font-weight:700;color:#713F12;text-align:left">
+        💡 地址 (address) tells us WHERE you live!<br>
+        A full address has: <strong>Number + Street + City</strong>
+      </div>
+      <div id="q3-fields">
+        <div class="address-field">
+          <div class="address-label">🔢 House Number <span class="address-zh">門牌號碼 (mén pái hào mǎ)</span></div>
+          <input class="address-input" id="addr-number" type="text" placeholder="e.g. 123">
+        </div>
+        <div class="address-field">
+          <div class="address-label">🛣️ Street Name <span class="address-zh">街道 (jiē dào)</span></div>
+          <input class="address-input" id="addr-street" type="text" placeholder="e.g. Sunshine Road">
+        </div>
+        <div class="address-field">
+          <div class="address-label">🌆 Town / City <span class="address-zh">城市 (chéng shì)</span></div>
+          <input class="address-input" id="addr-city" type="text" placeholder="e.g. Kaohsiung">
+        </div>
+      </div>
+      <div id="q3-preview" style="display:none;margin-bottom:16px;"></div>
+      <button class="btn btn-primary" onclick="submitAddress()">Done! ✅</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ QUIZ 4: Where Do You Live? ═══════════════ -->
+  <div id="screen-quiz4" class="screen">
+    <div class="card">
+      <div class="score-chip">⭐ <span id="q4-score">0</span> pts</div>
+      <span class="emoji-hero">🌍</span>
+      <div class="card-title">Where Do You Live?</div>
+      <div class="card-sub">你住在哪種地方？— Tap where you live!</div>
+      <div class="where-choices">
+        <button class="where-btn" onclick="selectWhere(this,'town')">
+          <span class="where-emoji">🏘️</span>
+          <span class="where-eng">A Town</span><br>
+          <span class="where-zh">鄉鎮</span>
+        </button>
+        <button class="where-btn" onclick="selectWhere(this,'city')">
+          <span class="where-emoji">🌆</span>
+          <span class="where-eng">A City</span><br>
+          <span class="where-zh">城市</span>
+        </button>
+        <button class="where-btn" onclick="selectWhere(this,'country')">
+          <span class="where-emoji">🌾</span>
+          <span class="where-eng">The Country</span><br>
+          <span class="where-zh">鄉下</span>
+        </button>
+      </div>
+      <div id="q4-sentence" style="display:none;background:#EFF6FF;border-radius:16px;padding:14px;margin-bottom:16px;">
+        <p style="font-weight:800;color:#1E3A5F;font-size:1rem">Now write about it!</p>
+        <p style="font-size:0.95rem;color:#374151;font-weight:700;margin:8px 0">
+          I live in <span id="q4-place" style="color:#2563EB"></span>. It is a <span id="q4-type" style="color:#2563EB"></span>.
+        </p>
+      </div>
+      <button class="btn btn-green" id="q4-submit" onclick="submitWhere()" style="display:none">
+        That's me! 🎉
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ RESULTS SCREEN ═══════════════ -->
+  <div id="screen-results" class="screen">
+    <div class="card">
+      <span id="result-trophy" class="emoji-hero">🏆</span>
+      <div class="card-title" id="result-name-title">Great Job!</div>
+      <div class="result-score" id="result-score-num">0</div>
+      <div class="result-label">out of 100 points</div>
+      <span class="stars" id="result-stars">⭐⭐⭐</span>
+      <div class="result-msg" id="result-msg">Amazing work!</div>
+      <div class="divider"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="goToScoreboard()">🏆 Scoreboard</button>
+        <button class="btn btn-green" onclick="newPlayer()">👤 Next Player</button>
       </div>
     </div>
   </div>
-</div>
 
-<!-- ════════ PAGE 2 ════════ -->
-<div class="page" id="page-2">
-  <div class="page-header">
-    <div class="page-title" style="color:var(--p2)">⚙️ Conjugate!</div>
-    <div class="page-subtitle">Fill in the correct verb form for every pronoun.</div>
-  </div>
-  <div class="page-card">
-    <div class="game-status">
-      <div class="round-info">Verb <span id="p2-round">1</span> / <span id="p2-total">8</span></div>
-      <div class="progress-bar"><div class="progress-fill" id="p2-progress" style="width:0%;background:var(--p2)"></div></div>
-      <div class="game-score" style="color:var(--p2)">⭐ <span id="p2-score">0</span></div>
-    </div>
-  </div>
-  <div class="page-card" id="p2-game-area">
-    <div class="conj-verb-header">
-      <div class="conj-verb-tag" id="p2-verb-tag">TO BE</div>
-      <div class="conj-instruction" id="p2-instruction"></div>
-    </div>
-    <div id="p2-rows" class="mt-16"></div>
-    <div id="p2-feedback" class="hidden mt-10"></div>
-    <div class="flex justify-between items-center mt-16">
-      <button class="btn btn-ghost" id="p2-check-btn" onclick="p2Check()">✅ Check Answers</button>
-      <button class="btn btn-primary hidden" id="p2-next-btn" onclick="p2Next()">Next Verb →</button>
-    </div>
-  </div>
-  <div class="page-card hidden" id="p2-results">
-    <div class="results-screen">
-      <div class="results-emoji" id="p2-emoji">🌟</div>
-      <div class="results-title">Conjugation Master,</div>
-      <div class="results-name" id="p2-results-name"></div>
-      <div class="results-score"><span id="p2-final">0</span></div>
-      <div class="results-msg" id="p2-msg"></div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
-        <button class="btn btn-ghost" onclick="p2Restart()">🔄 Practice Again</button>
-        <button class="btn-next-page" onclick="goPage(3)">Next: Questions! →</button>
+  <!-- ═══════════════ SCOREBOARD SCREEN ═══════════════ -->
+  <div id="screen-scoreboard" class="screen">
+    <div class="card">
+      <span class="emoji-hero">🏆</span>
+      <div class="card-title">Scoreboard!</div>
+      <div class="card-sub">排行榜 — How did everyone do?</div>
+      <div id="scoreboard-table-wrap"></div>
+      <div class="divider"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="newPlayer()">👤 New Player</button>
+        <button class="btn btn-coral" onclick="clearScoreboard()">🗑️ Clear All</button>
       </div>
     </div>
   </div>
-</div>
 
-<!-- ════════ PAGE 3 ════════ -->
-<div class="page" id="page-3">
-  <div class="page-header">
-    <div class="page-title" style="color:var(--p3)">❓ Questions</div>
-    <div class="page-subtitle">Yes/No, Wh- questions, and more in the present simple!</div>
-  </div>
-  <div class="page-card">
-    <div class="game-status">
-      <div class="round-info">Question <span id="p3-q">1</span> / 12</div>
-      <div class="progress-bar"><div class="progress-fill" id="p3-progress" style="width:0%;background:var(--p3)"></div></div>
-      <div class="game-score" style="color:var(--p3)">⭐ <span id="p3-score">0</span></div>
-    </div>
-  </div>
-  <div class="page-card" id="p3-game-area">
-    <div id="p3-badge"></div>
-    <div class="q-prompt" id="p3-prompt"></div>
-    <div class="q-choices" id="p3-choices"></div>
-    <div id="p3-feedback" class="hidden mt-10"></div>
-    <div class="flex justify-between items-center mt-16">
-      <div></div>
-      <button class="btn btn-primary hidden" id="p3-next-btn" onclick="p3Next()">Next →</button>
-    </div>
-  </div>
-  <div class="page-card hidden" id="p3-results">
-    <div class="results-screen">
-      <div class="results-emoji" id="p3-emoji">🌟</div>
-      <div class="results-title">Question Expert,</div>
-      <div class="results-name" id="p3-results-name"></div>
-      <div class="results-score"><span id="p3-final">0</span> / 12</div>
-      <div class="results-msg" id="p3-msg"></div>
-      <div class="results-breakdown" id="p3-breakdown"></div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:4px;">
-        <button class="btn btn-ghost" onclick="p3Restart()">🔄 Play Again</button>
-        <button class="btn-next-page" onclick="showFinale()">🏆 See Final Score!</button>
-      </div>
-    </div>
-  </div>
-</div>
+</div><!-- #app -->
 
+<!-- Feedback Overlay -->
+<div class="feedback-overlay" id="feedback-overlay" style="display:none" onclick="closeFeedback()">
+  <div class="feedback-box" onclick="event.stopPropagation()">
+    <span class="feedback-emoji" id="fb-emoji">🎉</span>
+    <div class="feedback-title" id="fb-title">Correct!</div>
+    <div class="feedback-msg" id="fb-msg">Great job!</div>
+    <div class="feedback-pts" id="fb-pts">+10 pts</div>
+    <br><br>
+    <button class="btn btn-primary" onclick="closeFeedback()">Next ➡️</button>
+  </div>
 </div>
-<div class="confetti" id="confetti-container"></div>
 
 <script>
-// ══════════════════════════════════════════
-// GLOBAL
-// ══════════════════════════════════════════
-let studentName = '';
-let globalScore = 0;
-const pageScores = { p1: 0, p2: 0, p2max: 0, p3: 0 };
+// ─── GAME DATA ───
+const vocab = [
+  { word: 'address',      zh: '地址',    pinyin: 'dì zhǐ',        def: 'Tells us WHERE you live! Every home has one.',   emoji: '📍' },
+  { word: 'street',       zh: '街道',    pinyin: 'jiē dào',       def: 'The road where your home is!',                   emoji: '🛣️' },
+  { word: 'house number', zh: '門牌號碼', pinyin: 'mén pái hào mǎ',def: 'The special number on your home.',              emoji: '🔢' },
+  { word: 'city',         zh: '城市',    pinyin: 'chéng shì',     def: 'A BIG place with LOTS of people and tall buildings!', emoji: '🌆' },
+  { word: 'town',         zh: '鄉鎮',    pinyin: 'xiāng zhèn',    def: 'Smaller than a city — fewer people!',            emoji: '🏘️' },
+  { word: 'apartment',    zh: '公寓',    pinyin: 'gōng yù',       def: 'A home inside a big building.',                  emoji: '🏢' },
+  { word: 'neighborhood', zh: '社區',    pinyin: 'shè qū',        def: 'Where families live, work, and play!',           emoji: '🏡' },
+  { word: 'world',        zh: '世界',    pinyin: 'shì jiè',       def: 'Everywhere on Earth!',                           emoji: '🌍' },
+];
 
+const fillBlankQ = [
+  {
+    before: 'The', blank: '___',  after: 'is very big, and people live in all kinds of places.',
+    answer: 'world',
+    choices: [
+      { word: 'world',       zh: '世界', emoji: '🌍' },
+      { word: 'city',        zh: '城市', emoji: '🌆' },
+      { word: 'apartment',   zh: '公寓', emoji: '🏢' },
+      { word: 'street',      zh: '街道', emoji: '🛣️' },
+    ],
+    hint: '🌍 This is the biggest place of all!'
+  },
+  {
+    before: 'Some homes are houses. Some homes are', blank: '___', after: '.',
+    answer: 'apartments',
+    choices: [
+      { word: 'apartments',  zh: '公寓', emoji: '🏢' },
+      { word: 'towns',       zh: '鄉鎮', emoji: '🏘️' },
+      { word: 'streets',     zh: '街道', emoji: '🛣️' },
+      { word: 'cities',      zh: '城市', emoji: '🌆' },
+    ],
+    hint: '🏢 This type of home is inside a tall building!'
+  },
+  {
+    before: 'A', blank: '___', after: 'is where families live, work, and play.',
+    answer: 'neighborhood',
+    choices: [
+      { word: 'neighborhood', zh: '社區', emoji: '🏡' },
+      { word: 'world',        zh: '世界', emoji: '🌍' },
+      { word: 'city',         zh: '城市', emoji: '🌆' },
+      { word: 'address',      zh: '地址', emoji: '📍' },
+    ],
+    hint: '🏡 社區 — a community!'
+  },
+  {
+    before: 'Cities are like very big', blank: '___', after: '.',
+    answer: 'towns',
+    choices: [
+      { word: 'towns',       zh: '鄉鎮', emoji: '🏘️' },
+      { word: 'apartments',  zh: '公寓', emoji: '🏢' },
+      { word: 'worlds',      zh: '世界', emoji: '🌍' },
+      { word: 'addresses',   zh: '地址', emoji: '📍' },
+    ],
+    hint: '🏘️ It is SMALLER than a city!'
+  },
+  {
+    before: 'There are a lot of people and big buildings in a', blank: '___', after: '.',
+    answer: 'city',
+    choices: [
+      { word: 'city',        zh: '城市', emoji: '🌆' },
+      { word: 'town',        zh: '鄉鎮', emoji: '🏘️' },
+      { word: 'street',      zh: '街道', emoji: '🛣️' },
+      { word: 'neighborhood',zh: '社區', emoji: '🏡' },
+    ],
+    hint: '🌆 城市 — very big with skyscrapers!'
+  },
+];
+
+const matchPairs = [
+  { word: 'address',      def: '📍 WHERE you live',          wZh: '地址',    dZh: '你住的地方' },
+  { word: 'street',       def: '🛣️ The road by your home',   wZh: '街道',    dZh: '你家旁的路' },
+  { word: 'city',         def: '🌆 Big place, many people',  wZh: '城市',    dZh: '大城鎮，人很多' },
+  { word: 'neighborhood', def: '🏡 Where we live & play',    wZh: '社區',    dZh: '生活和玩耍的地方' },
+  { word: 'apartment',    def: '🏢 Home in a big building',  wZh: '公寓',    dZh: '高樓裡的家' },
+];
+
+// ─── GAME STATE ───
+let playerName   = '';
+let currentScore = 0;
+let scoreboard   = [];
+
+let vocabIdx = 0;
+let q1Idx    = 0;
+let q1Score  = 0;
+let q2Score  = 0;
+let q3Done   = false;
+let q4Done   = false;
+
+let matchSelected = { type: null, idx: null };
+let matchMatched  = [];
+
+let feedbackCallback = null;
+
+// ─── STORAGE ───
+async function loadScoreboard() {
+  try {
+    const r = await window.storage.get('home-game-scores');
+    return r ? JSON.parse(r.value) : [];
+  } catch { return []; }
+}
+async function saveScore(name, score) {
+  try {
+    const board = await loadScoreboard();
+    board.push({ name, score, medal: score >= 90 ? '🥇' : score >= 70 ? '🥈' : score >= 50 ? '🥉' : '🌟' });
+    board.sort((a, b) => b.score - a.score);
+    await window.storage.set('home-game-scores', JSON.stringify(board));
+    return board;
+  } catch { return []; }
+}
+
+// ─── SCREEN TRANSITIONS ───
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const s = document.getElementById(id);
+  s.classList.add('active');
+}
+
+// ─── WELCOME → VOCAB ───
 function startGame() {
-  const raw = document.getElementById('name-input').value.trim();
-  if (!raw) { document.getElementById('name-error').style.display = 'block'; document.getElementById('name-input').focus(); return; }
-  studentName = raw.charAt(0).toUpperCase() + raw.slice(1);
-  document.getElementById('welcome-screen').style.display = 'none';
-  document.getElementById('nav-player-name').textContent = '👤 ' + studentName;
-  p1Init(); p2Init(); p3Init();
+  const n = document.getElementById('playerName').value.trim();
+  if (!n) { alert('Please type your name first! 請輸入你的名字！'); return; }
+  playerName   = n;
+  currentScore = 0;
+  q1Idx = q1Score = q2Score = 0;
+  q3Done = q4Done = false;
+  vocabIdx = 0;
+  matchMatched  = [];
+  matchSelected = { type: null, idx: null };
+  showVocab();
+  showScreen('screen-vocab');
 }
 
-function addGlobal(n) {
-  globalScore += n;
-  document.getElementById('global-score').textContent = globalScore;
+// ─── VOCAB ───
+function showVocab() {
+  const v = vocab[vocabIdx];
+  const pct = Math.round((vocabIdx / vocab.length) * 100);
+  document.getElementById('vocab-progress').style.width = pct + '%';
+  document.getElementById('vocab-counter').textContent = `Word ${vocabIdx + 1} of ${vocab.length}`;
+  document.getElementById('vocab-score').textContent = currentScore;
+  document.getElementById('vocab-next-btn').textContent =
+    vocabIdx < vocab.length - 1 ? 'Next Word ➡️' : 'Start Quiz! 🎯';
+  document.getElementById('vocab-display').innerHTML = `
+    <div class="vocab-card">
+      <div class="vocab-word">${v.word}</div>
+      <span class="vocab-emoji">${v.emoji}</span>
+      <div>
+        <div class="zh-bubble"><span class="zh-text">${v.zh}</span></div>
+        <div class="pinyin">${v.pinyin}</div>
+      </div>
+      <div class="vocab-def">${v.def}</div>
+    </div>`;
+}
+function nextVocab() {
+  vocabIdx++;
+  if (vocabIdx < vocab.length) { showVocab(); }
+  else { initQ1(); showScreen('screen-quiz1'); }
 }
 
-function goPage(n) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + n).classList.add('active');
-  document.querySelector(`.nav-tab[data-page="${n}"]`).classList.add('active');
-  window.scrollTo(0, 0);
+// ─── QUIZ 1: Fill in Blank ───
+function initQ1() {
+  q1Idx = 0; q1Score = 0;
+  renderQ1();
 }
+function renderQ1() {
+  const q = fillBlankQ[q1Idx];
+  const pct = Math.round(((q1Idx) / fillBlankQ.length) * 100);
+  document.getElementById('q1-progress').style.width = pct + '%';
+  document.getElementById('q1-score').textContent = currentScore;
 
-function setFeedback(id, type, msg) {
-  const el = document.getElementById(id);
-  el.className = `feedback-box ${type}`;
-  el.innerHTML = (type === 'correct' ? '✅ ' : type === 'wrong' ? '❌ ' : 'ℹ️ ') + msg;
-  el.classList.remove('hidden');
+  // shuffle choices
+  const choices = [...q.choices].sort(() => Math.random() - 0.5);
+
+  document.getElementById('q1-display').innerHTML = `
+    <p style="font-weight:800;color:#6B7280;font-size:0.9rem;margin-bottom:10px">
+      Question ${q1Idx + 1} of ${fillBlankQ.length}
+    </p>
+    <div class="question-text">
+      ${q.before} <span style="background:#FDE68A;padding:2px 10px;border-radius:8px;color:#92400E">${q.blank}</span> ${q.after}
+    </div>
+    <div class="question-hint">${q.hint}</div>
+    <div class="choices-grid" id="q1-choices">
+      ${choices.map((c, i) => `
+        <button class="choice-btn" id="qc-${i}" onclick="answerQ1(this,'${c.word}')">
+          ${c.emoji} ${c.word}
+          <span class="choice-zh">${c.zh}</span>
+        </button>`).join('')}
+    </div>`;
 }
+function answerQ1(btn, chosen) {
+  const q = fillBlankQ[q1Idx];
+  const correct = chosen === q.answer || chosen.replace(/s$/,'') === q.answer || q.answer === chosen.replace(/s$/,'');
+  document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
 
-function launchConfetti() {
-  const c = document.getElementById('confetti-container');
-  c.innerHTML = '';
-  const colors = ['#ff6b6b','#ffd93d','#6bcb77','#c77dff','#4ecdc4','#ff9a3c'];
-  for (let i = 0; i < 70; i++) {
-    const d = document.createElement('div');
-    d.className = 'conf-piece';
-    d.style.left = Math.random() * 100 + 'vw';
-    d.style.background = colors[Math.floor(Math.random() * colors.length)];
-    d.style.animationDuration = (1.2 + Math.random() * 1.6) + 's';
-    d.style.animationDelay = Math.random() * 0.6 + 's';
-    c.appendChild(d);
-    setTimeout(() => d.remove(), 3500);
-  }
-}
-
-function getEmoji(s, t) {
-  const p = s / t;
-  return p === 1 ? '🏆' : p >= 0.8 ? '🌟' : p >= 0.6 ? '😊' : p >= 0.4 ? '💪' : '📚';
-}
-function getMsg(s, t, name) {
-  const p = s / t;
-  if (p === 1)   return `${name}, you got a perfect score! You're a grammar champion! 🎉`;
-  if (p >= 0.8)  return `Excellent work, ${name}! Almost perfect — so impressive!`;
-  if (p >= 0.6)  return `Good job, ${name}! Keep going — you're getting there!`;
-  if (p >= 0.4)  return `Not bad, ${name}! Review the answers and try again.`;
-  return `Keep practicing, ${name} — you'll get there! 💪`;
-}
-
-// ══════════════════════════════════════════
-// PAGE 1 — PICK THE PRONOUN
-// ══════════════════════════════════════════
-const p1Questions = [
-  { pre:'', post:' is a doctor. She works at the hospital.', answer:'She', choices:['He','She','They','I'], hint:'feminine, singular' },
-  { pre:'', post:' play football every Saturday morning.', answer:'They', choices:['He','She','They','I'], hint:'plural people' },
-  { pre:'', post:' am from Taiwan. I live in Kaohsiung.', answer:'I', choices:['I','You','He','We'], hint:'first person singular' },
-  { pre:'', post:' has a big dog named Max.', answer:'He', choices:['She','He','We','They'], hint:'masculine singular' },
-  { pre:'My friends and', post:' go to the same school.', answer:'I', choices:['me','I','we','us'], hint:'subject pronoun after "and"' },
-  { pre:'', post:' rains a lot in November.', answer:'It', choices:['He','She','It','They'], hint:'used for weather' },
-  { pre:'', post:' love pizza and pasta.', answer:'We', choices:['They','We','He','I'], hint:'first person plural' },
-  { pre:'The cat drinks milk. ', post:' is very thirsty.', answer:'It', choices:['He','She','It','They'], hint:'refers to an animal (neutral)' },
-  { pre:'', post:' often forgets her keys.', answer:'She', choices:['He','She','They','We'], hint:'"her" clue → feminine' },
-  { pre:'', post:' are my best friends from school.', answer:'They', choices:['We','She','They','He'], hint:'plural + "are"' },
-];
-
-let p1Idx = 0, p1Score = 0, p1Locked = false;
-
-function p1Init() {
-  p1Idx = 0; p1Score = 0; p1Locked = false;
-  document.getElementById('p1-game-area').classList.remove('hidden');
-  document.getElementById('p1-results').classList.add('hidden');
-  p1Render();
-}
-
-function p1Render() {
-  const q = p1Questions[p1Idx]; p1Locked = false;
-  document.getElementById('p1-q').textContent = p1Idx + 1;
-  document.getElementById('p1-score').textContent = p1Score;
-  document.getElementById('p1-progress').style.width = (p1Idx / p1Questions.length * 100) + '%';
-  document.getElementById('p1-feedback').classList.add('hidden');
-  document.getElementById('p1-next-btn').classList.add('hidden');
-  document.getElementById('p1-sentence-display').innerHTML =
-    `${q.pre}<span class="blank" id="p1-blank">?</span>${q.post}<span class="sentence-hint">Hint: ${q.hint}</span>`;
-  const ch = document.getElementById('p1-choices'); ch.innerHTML = '';
-  [...q.choices].sort(() => Math.random() - 0.5).forEach(opt => {
-    const b = document.createElement('button'); b.className = 'choice-btn'; b.textContent = opt;
-    b.onclick = () => p1Answer(b, opt, q); ch.appendChild(b);
-  });
-}
-
-function p1Answer(btn, chosen, q) {
-  if (p1Locked) return; p1Locked = true;
-  document.getElementById('p1-blank').textContent = chosen;
-  document.querySelectorAll('#p1-choices .choice-btn').forEach(b => {
-    b.classList.add('locked');
-    if (b.textContent === q.answer) b.classList.add('correct-ans');
-  });
-  if (chosen === q.answer) {
-    btn.classList.add('correct-ans'); p1Score++; addGlobal(1);
-    document.getElementById('p1-score').textContent = p1Score;
-    setFeedback('p1-feedback', 'correct', 'Correct! Well done! 🎉');
+  if (correct) {
+    btn.classList.add('correct');
+    q1Score += 10; currentScore += 10;
+    confetti();
+    showFeedback(true, `${q.answer.toUpperCase()} — ${vocab.find(v=>v.word===q.answer||v.word===q.answer.replace(/s$/, ''))?.zh || ''}`, '+10 pts! 🎉', () => {
+      q1Idx++;
+      if (q1Idx < fillBlankQ.length) { renderQ1(); }
+      else { initQ2(); showScreen('screen-quiz2'); }
+    });
   } else {
-    btn.classList.add('wrong-ans');
-    setFeedback('p1-feedback', 'wrong', `Not quite. The answer is <strong>${q.answer}</strong>.`);
+    btn.classList.add('wrong');
+    showFeedback(false, `The answer is: ${q.answer}`, 'Keep going! 💪', () => {
+      q1Idx++;
+      if (q1Idx < fillBlankQ.length) { renderQ1(); }
+      else { initQ2(); showScreen('screen-quiz2'); }
+    });
   }
-  const nb = document.getElementById('p1-next-btn'); nb.classList.remove('hidden');
-  nb.textContent = p1Idx + 1 < p1Questions.length ? 'Next →' : 'See Results 🏆';
 }
 
-function p1Next() { p1Idx++; p1Idx >= p1Questions.length ? p1ShowResults() : p1Render(); }
-
-function p1ShowResults() {
-  pageScores.p1 = p1Score;
-  document.getElementById('p1-game-area').classList.add('hidden');
-  document.getElementById('p1-results').classList.remove('hidden');
-  document.getElementById('p1-final').textContent = p1Score;
-  document.getElementById('p1-results-name').textContent = studentName + '!';
-  document.getElementById('p1-emoji').textContent = getEmoji(p1Score, 10);
-  document.getElementById('p1-msg').textContent = getMsg(p1Score, 10, studentName);
-  if (p1Score >= 8) launchConfetti();
+// ─── QUIZ 2: Matching ───
+function initQ2() {
+  matchMatched = [];
+  matchSelected = { type: null, idx: null };
+  renderQ2();
 }
+function renderQ2() {
+  document.getElementById('q2-score').textContent = currentScore;
+  const shuffledDefs = [...matchPairs].sort(() => Math.random() - 0.5);
 
-function p1Restart() {
-  document.getElementById('p1-game-area').classList.remove('hidden');
-  document.getElementById('p1-results').classList.add('hidden');
-  p1Init();
+  document.getElementById('q2-display').innerHTML = `
+    <p style="font-size:0.9rem;font-weight:800;color:#6B7280;margin-bottom:12px">
+      Tap a word 👈 then tap its meaning 👉
+    </p>
+    <div class="match-grid">
+      <div class="match-col" id="match-words">
+        ${matchPairs.map((p, i) => `
+          <button class="match-btn match-word" id="mw-${i}" onclick="selectMatch('word',${i})">
+            ${p.word}<br><small style="opacity:0.6">${p.wZh}</small>
+          </button>`).join('')}
+      </div>
+      <div class="match-col" id="match-defs">
+        ${shuffledDefs.map((p, i) => `
+          <button class="match-btn match-def" id="md-${i}" data-word="${p.word}" onclick="selectMatch('def',${i})">
+            ${p.def}<br><small style="opacity:0.6">${p.dZh}</small>
+          </button>`).join('')}
+      </div>
+    </div>
+    <div id="match-status" style="margin-top:12px;font-weight:800;font-size:0.95rem;color:#374151"></div>`;
 }
+function selectMatch(type, idx) {
+  const el = document.getElementById(type === 'word' ? `mw-${idx}` : `md-${idx}`);
+  if (el.classList.contains('used') || el.classList.contains('matched-ok')) return;
 
-// ══════════════════════════════════════════
-// PAGE 2 — CONJUGATE
-// ══════════════════════════════════════════
-const p2VerbSets = [
-  { verb:'TO BE', type:'mcq', rows:[
-    {pronoun:'I',    choices:['am','is','are'], answer:'am' },
-    {pronoun:'You',  choices:['am','is','are'], answer:'are'},
-    {pronoun:'He',   choices:['am','is','are'], answer:'is' },
-    {pronoun:'She',  choices:['am','is','are'], answer:'is' },
-    {pronoun:'We',   choices:['am','is','are'], answer:'are'},
-    {pronoun:'They', choices:['am','is','are'], answer:'are'},
-  ]},
-  { verb:'TO HAVE', type:'mcq', rows:[
-    {pronoun:'I',    choices:['has','have'], answer:'have'},
-    {pronoun:'She',  choices:['has','have'], answer:'has' },
-    {pronoun:'He',   choices:['has','have'], answer:'has' },
-    {pronoun:'We',   choices:['has','have'], answer:'have'},
-    {pronoun:'They', choices:['has','have'], answer:'have'},
-    {pronoun:'It',   choices:['has','have'], answer:'has' },
-  ]},
-  { verb:'TO DO', type:'mcq', rows:[
-    {pronoun:'I',    choices:['do','does'], answer:'do'  },
-    {pronoun:'You',  choices:['do','does'], answer:'do'  },
-    {pronoun:'He',   choices:['do','does'], answer:'does'},
-    {pronoun:'She',  choices:['do','does'], answer:'does'},
-    {pronoun:'We',   choices:['do','does'], answer:'do'  },
-    {pronoun:'They', choices:['do','does'], answer:'do'  },
-  ]},
-  { verb:'TO GO', type:'type', rows:[
-    {pronoun:'I',    answer:'go'  },
-    {pronoun:'You',  answer:'go'  },
-    {pronoun:'She',  answer:'goes'},
-    {pronoun:'He',   answer:'goes'},
-    {pronoun:'We',   answer:'go'  },
-    {pronoun:'They', answer:'go'  },
-  ]},
-  { verb:'TO STUDY', type:'type', rows:[
-    {pronoun:'I',    answer:'study'  },
-    {pronoun:'You',  answer:'study'  },
-    {pronoun:'He',   answer:'studies'},
-    {pronoun:'She',  answer:'studies'},
-    {pronoun:'We',   answer:'study'  },
-    {pronoun:'They', answer:'study'  },
-  ]},
-  { verb:'TO EAT', type:'type', rows:[
-    {pronoun:'I',    answer:'eat' },
-    {pronoun:'You',  answer:'eat' },
-    {pronoun:'He',   answer:'eats'},
-    {pronoun:'She',  answer:'eats'},
-    {pronoun:'We',   answer:'eat' },
-    {pronoun:'They', answer:'eat' },
-  ]},
-  { verb:'TO LIKE', type:'type', rows:[
-    {pronoun:'I',    answer:'like' },
-    {pronoun:'You',  answer:'like' },
-    {pronoun:'He',   answer:'likes'},
-    {pronoun:'She',  answer:'likes'},
-    {pronoun:'We',   answer:'like' },
-    {pronoun:'They', answer:'like' },
-  ]},
-  { verb:'TO WATCH', type:'mcq', rows:[
-    {pronoun:'I',    choices:['watch','watches'], answer:'watch'  },
-    {pronoun:'She',  choices:['watch','watches'], answer:'watches'},
-    {pronoun:'He',   choices:['watch','watches'], answer:'watches'},
-    {pronoun:'We',   choices:['watch','watches'], answer:'watch'  },
-    {pronoun:'They', choices:['watch','watches'], answer:'watch'  },
-    {pronoun:'It',   choices:['watch','watches'], answer:'watches'},
-  ]},
-];
+  // deselect same type
+  document.querySelectorAll(type === 'word' ? '.match-word' : '.match-def')
+    .forEach(b => b.classList.remove('selected'));
 
-let p2Round = 0, p2Score = 0, p2Checked = false;
+  el.classList.add('selected');
+  matchSelected[type] = idx;
 
-function p2Init() {
-  p2Round = 0; p2Score = 0;
-  pageScores.p2max = p2VerbSets.reduce((a, v) => a + v.rows.length, 0);
-  document.getElementById('p2-game-area').classList.remove('hidden');
-  document.getElementById('p2-results').classList.add('hidden');
-  p2Render();
-}
+  // Check if both selected
+  if (matchSelected.word !== null && matchSelected.def !== null) {
+    const wordEl = document.getElementById(`mw-${matchSelected.word}`);
+    const defEl  = document.getElementById(`md-${matchSelected.def}`);
+    const wordName = matchPairs[matchSelected.word].word;
+    const defWord  = defEl.getAttribute('data-word');
+    const correct  = wordName === defWord;
 
-function p2Render() {
-  p2Checked = false;
-  const data = p2VerbSets[p2Round];
-  document.getElementById('p2-round').textContent = p2Round + 1;
-  document.getElementById('p2-total').textContent = p2VerbSets.length;
-  document.getElementById('p2-score').textContent = p2Score;
-  document.getElementById('p2-progress').style.width = (p2Round / p2VerbSets.length * 100) + '%';
-  document.getElementById('p2-verb-tag').textContent = data.verb;
-  document.getElementById('p2-instruction').textContent =
-    data.type === 'mcq' ? 'Click the correct form for each pronoun.' : 'Type the correct form for each pronoun.';
-  document.getElementById('p2-feedback').classList.add('hidden');
-  document.getElementById('p2-check-btn').classList.remove('hidden');
-  document.getElementById('p2-next-btn').classList.add('hidden');
-  const rows = document.getElementById('p2-rows'); rows.innerHTML = '';
-  data.rows.forEach((row, i) => {
-    const div = document.createElement('div'); div.className = 'conj-row'; div.id = `p2-row-${i}`;
-    const pro = document.createElement('div'); pro.className = 'conj-pronoun'; pro.textContent = row.pronoun;
-    const eq  = document.createElement('div'); eq.className = 'conj-equals'; eq.textContent = '→';
-    const tick = document.createElement('div'); tick.className = 'conj-tick'; tick.id = `p2-tick-${i}`;
-    div.appendChild(pro); div.appendChild(eq);
-    if (data.type === 'mcq') {
-      const cc = document.createElement('div'); cc.className = 'conj-choices';
-      row.choices.forEach(c => {
-        const b = document.createElement('button');
-        b.className = 'conj-choice'; b.textContent = c; b.dataset.value = c; b.dataset.row = i;
-        b.onclick = () => { if (!p2Checked) { document.querySelectorAll(`.conj-choice[data-row="${i}"]`).forEach(x => x.classList.remove('selected-correct','selected-wrong')); b.classList.add('selected-correct'); } };
-        cc.appendChild(b);
-      });
-      div.appendChild(cc);
+    if (correct) {
+      wordEl.classList.remove('selected'); wordEl.classList.add('matched-ok', 'used');
+      defEl.classList.remove('selected');  defEl.classList.add('matched-ok', 'used');
+      matchMatched.push(wordName);
+      q2Score += 10; currentScore += 10;
+      document.getElementById('q2-score').textContent = currentScore;
+      document.getElementById('match-status').textContent = `✅ Matched ${matchMatched.length} of ${matchPairs.length}!`;
+      confetti();
+      if (matchMatched.length === matchPairs.length) {
+        setTimeout(() => { showScreen('screen-quiz3'); }, 900);
+      }
     } else {
-      const inp = document.createElement('input');
-      inp.className = 'conj-input'; inp.type = 'text'; inp.placeholder = 'type here...'; inp.id = `p2-input-${i}`;
-      inp.addEventListener('keydown', e => { if (e.key === 'Enter') p2Check(); });
-      div.appendChild(inp);
+      wordEl.classList.add('matched-fail'); defEl.classList.add('matched-fail');
+      setTimeout(() => {
+        wordEl.classList.remove('selected','matched-fail');
+        defEl.classList.remove('selected','matched-fail');
+      }, 600);
     }
-    div.appendChild(tick); rows.appendChild(div);
-  });
-}
-
-function p2Check() {
-  if (p2Checked) return; p2Checked = true;
-  const data = p2VerbSets[p2Round]; let roundScore = 0;
-  data.rows.forEach((row, i) => {
-    const rowEl = document.getElementById(`p2-row-${i}`);
-    const tick  = document.getElementById(`p2-tick-${i}`);
-    let ua = '';
-    if (data.type === 'mcq') {
-      const sel = document.querySelector(`.conj-choice[data-row="${i}"].selected-correct`);
-      ua = sel ? sel.dataset.value : '';
-      document.querySelectorAll(`.conj-choice[data-row="${i}"]`).forEach(b => {
-        b.disabled = true;
-        if (b.dataset.value === row.answer) b.classList.add('selected-correct');
-        else b.classList.remove('selected-correct');
-        if (sel && b === sel && b.dataset.value !== row.answer) b.classList.add('selected-wrong');
-      });
-    } else {
-      const inp = document.getElementById(`p2-input-${i}`);
-      ua = inp.value.trim().toLowerCase(); inp.disabled = true;
-      if (ua === row.answer) inp.classList.add('correct');
-      else { inp.classList.add('wrong'); inp.value = `${ua || '?'} → ${row.answer}`; }
-    }
-    if (ua === row.answer) { rowEl.classList.add('correct-row'); tick.textContent = '✅'; roundScore++; }
-    else { rowEl.classList.add('wrong-row'); tick.textContent = '❌'; }
-  });
-  p2Score += roundScore; addGlobal(roundScore);
-  document.getElementById('p2-score').textContent = p2Score;
-  setFeedback('p2-feedback', roundScore === data.rows.length ? 'correct' : roundScore >= data.rows.length * 0.6 ? 'info' : 'wrong',
-    `${roundScore} / ${data.rows.length} correct for ${data.verb}.`);
-  document.getElementById('p2-check-btn').classList.add('hidden');
-  const nb = document.getElementById('p2-next-btn'); nb.classList.remove('hidden');
-  nb.textContent = p2Round + 1 < p2VerbSets.length ? 'Next Verb →' : 'See Results 🏆';
-  if (roundScore === data.rows.length) launchConfetti();
-}
-
-function p2Next() { p2Round++; p2Round >= p2VerbSets.length ? p2ShowResults() : p2Render(); }
-
-function p2ShowResults() {
-  pageScores.p2 = p2Score;
-  document.getElementById('p2-game-area').classList.add('hidden');
-  document.getElementById('p2-results').classList.remove('hidden');
-  const total = pageScores.p2max;
-  document.getElementById('p2-final').textContent = `${p2Score} / ${total}`;
-  document.getElementById('p2-results-name').textContent = studentName + '!';
-  document.getElementById('p2-emoji').textContent = getEmoji(p2Score, total);
-  document.getElementById('p2-msg').textContent = getMsg(p2Score, total, studentName);
-  if (p2Score >= total * 0.8) launchConfetti();
-}
-
-function p2Restart() {
-  document.getElementById('p2-game-area').classList.remove('hidden');
-  document.getElementById('p2-results').classList.add('hidden');
-  p2Init();
-}
-
-// ══════════════════════════════════════════
-// PAGE 3 — QUESTIONS
-// ══════════════════════════════════════════
-const p3Questions = [
-  { type:'yesno', prompt:'Complete: ___ she like sushi?',
-    choices:['Do she like sushi?','Does she like sushi?','Is she like sushi?','Did she like sushi?'],
-    answer:'Does she like sushi?', explain:'He/She/It → use DOES in yes/no questions.' },
-  { type:'yesno', prompt:'___ they play tennis on weekends?',
-    choices:['Does they play tennis?','Do they play tennis?','Is they play tennis?','Are they play tennis?'],
-    answer:'Do they play tennis?', explain:'I/You/We/They → use DO in yes/no questions.' },
-  { type:'yesno', prompt:'"Does he work here?" → "Yes, ___."',
-    choices:['Yes, he do.','Yes, he does.','Yes, he is.','Yes, he works.'],
-    answer:'Yes, he does.', explain:'Short answers: Yes, he/she/it DOES.' },
-  { type:'yesno', prompt:'"Do you speak French?" → "No, ___."',
-    choices:["No, I don't.","No, I doesn't.","No, I not do.","No, I amn't."],
-    answer:"No, I don't.", explain:"Negative short answer: No, I/you/we/they DON'T." },
-  { type:'wh', prompt:'___ does she live? → She lives in Tokyo.',
-    choices:['What','Where','When','Who'], answer:'Where', explain:'WHERE asks about a place.' },
-  { type:'wh', prompt:'___ does he eat for breakfast? → He eats rice and eggs.',
-    choices:['Who','When','What','Where'], answer:'What', explain:'WHAT asks about a thing or food.' },
-  { type:'wh', prompt:"___ does the class start? → It starts at 8 o'clock.",
-    choices:['Where','What','When','Why'], answer:'When', explain:'WHEN asks about time.' },
-  { type:'wh', prompt:'___ teaches English here? → Mr. Lee does.',
-    choices:['What','Where','When','Who'], answer:'Who', explain:'WHO asks about a person. (No DO/DOES needed when WHO is the subject!)' },
-  { type:'form', prompt:'Put in order: [they / do / every day / study]',
-    choices:['Study do they every day?','Do they study every day?','Do study they every day?','They do study every day?'],
-    answer:'Do they study every day?', explain:'Question order: DO/DOES + subject + base verb + rest.' },
-  { type:'form', prompt:'Which question is correct?',
-    choices:['What does she works?','What work she does?','What does she work?','Does what she work?'],
-    answer:'What does she work?', explain:'Wh- questions: Wh-word + DOES + subject + BASE verb (no -s!).' },
-  { type:'error', prompt:'Find the CORRECT sentence:',
-    choices:['Where does he lives?','Where does he live?','Where do he live?','Where he does live?'],
-    answer:'Where does he live?', explain:'After DOES, use the BASE form (no -s). → does he LIVE (not lives).' },
-  { type:'error', prompt:'Which is CORRECT?',
-    choices:["She don't like coffee.","She doesn't likes coffee.","She doesn't like coffee.","She not like coffee."],
-    answer:"She doesn't like coffee.", explain:"He/She/It → DOESN'T + base verb. Never add -s after doesn't." },
-];
-
-const badgeClasses = { yesno:'badge-yesno', wh:'badge-wh', form:'badge-form', error:'badge-error' };
-const badgeLabels  = { yesno:'✅ Yes/No', wh:'💬 Wh- Question', form:'🔀 Question Order', error:'🔍 Error Correction' };
-let p3Idx = 0, p3Score = 0, p3Locked = false;
-const p3TS = { yesno:0, wh:0, form:0, error:0 };
-
-function p3Init() {
-  p3Idx = 0; p3Score = 0; p3Locked = false;
-  Object.keys(p3TS).forEach(k => p3TS[k] = 0);
-  document.getElementById('p3-game-area').classList.remove('hidden');
-  document.getElementById('p3-results').classList.add('hidden');
-  p3Render();
-}
-
-function p3Render() {
-  p3Locked = false;
-  const q = p3Questions[p3Idx];
-  document.getElementById('p3-q').textContent = p3Idx + 1;
-  document.getElementById('p3-score').textContent = p3Score;
-  document.getElementById('p3-progress').style.width = (p3Idx / p3Questions.length * 100) + '%';
-  document.getElementById('p3-feedback').classList.add('hidden');
-  document.getElementById('p3-next-btn').classList.add('hidden');
-  document.getElementById('p3-badge').innerHTML = `<div class="q-type-badge ${badgeClasses[q.type]}">${badgeLabels[q.type]}</div>`;
-  document.getElementById('p3-prompt').innerHTML = q.prompt.replace(/_+/, '<span class="q-blank">?</span>');
-  const ch = document.getElementById('p3-choices'); ch.innerHTML = '';
-  const letters = ['A','B','C','D'];
-  [...q.choices].sort(() => Math.random() - 0.5).forEach((opt, i) => {
-    const b = document.createElement('button'); b.className = 'q-choice';
-    b.innerHTML = `<span class="q-letter">${letters[i]}</span>${opt}`; b.dataset.answer = opt;
-    b.onclick = () => p3Answer(b, opt, q); ch.appendChild(b);
-  });
-}
-
-function p3Answer(btn, chosen, q) {
-  if (p3Locked) return; p3Locked = true;
-  document.querySelectorAll('#p3-choices .q-choice').forEach(b => {
-    b.classList.add('locked');
-    if (b.dataset.answer === q.answer) b.classList.add('correct-ans');
-  });
-  if (chosen === q.answer) {
-    btn.classList.add('correct-ans'); p3Score++; p3TS[q.type]++; addGlobal(1);
-    document.getElementById('p3-score').textContent = p3Score;
-    setFeedback('p3-feedback', 'correct', `✅ Correct! ${q.explain}`);
-  } else {
-    btn.classList.add('wrong-ans');
-    setFeedback('p3-feedback', 'wrong', `❌ ${q.explain}`);
+    matchSelected = { word: null, def: null };
   }
-  const nb = document.getElementById('p3-next-btn'); nb.classList.remove('hidden');
-  nb.textContent = p3Idx + 1 < p3Questions.length ? 'Next →' : 'See Results 🏆';
 }
 
-function p3Next() { p3Idx++; p3Idx >= p3Questions.length ? p3ShowResults() : p3Render(); }
-
-function p3ShowResults() {
-  pageScores.p3 = p3Score;
-  document.getElementById('p3-game-area').classList.add('hidden');
-  document.getElementById('p3-results').classList.remove('hidden');
-  document.getElementById('p3-final').textContent = p3Score;
-  document.getElementById('p3-results-name').textContent = studentName + '!';
-  document.getElementById('p3-emoji').textContent = getEmoji(p3Score, 12);
-  document.getElementById('p3-msg').textContent = getMsg(p3Score, 12, studentName);
-  const counts = { yesno:4, wh:4, form:2, error:2 };
-  document.getElementById('p3-breakdown').innerHTML =
-    Object.entries(p3TS).map(([t, sc]) =>
-      `<div class="rb-item">${badgeLabels[t]}<br><strong>${sc}/${counts[t]}</strong></div>`
-    ).join('');
-  if (p3Score >= 10) launchConfetti();
+// ─── QUIZ 3: My Address ───
+function submitAddress() {
+  const num    = document.getElementById('addr-number').value.trim();
+  const street = document.getElementById('addr-street').value.trim();
+  const city   = document.getElementById('addr-city').value.trim();
+  if (!num && !street && !city) {
+    document.getElementById('addr-city').focus();
+    return;
+  }
+  const preview = document.getElementById('q3-preview');
+  preview.style.display = 'block';
+  preview.innerHTML = `
+    <div style="background:#F0FDF4;border:2px solid #86EFAC;border-radius:16px;padding:16px;text-align:left;">
+      <p style="font-family:'Fredoka One',cursive;color:#166534;font-size:1.1rem;margin-bottom:8px">📍 My Address:</p>
+      <p style="font-size:1.1rem;font-weight:800;color:#1E3A5F">
+        ${[num, street, city].filter(Boolean).join(', ')}
+      </p>
+      <p style="font-size:0.85rem;color:#16A34A;margin-top:6px">地址 ✅</p>
+    </div>`;
+  q3Done = true;
+  setTimeout(() => { showScreen('screen-quiz4'); }, 1200);
 }
 
-function p3Restart() {
-  document.getElementById('p3-game-area').classList.remove('hidden');
-  document.getElementById('p3-results').classList.add('hidden');
-  p3Init();
+// ─── QUIZ 4: Where Do You Live? ───
+let whereChoice = null;
+function selectWhere(btn, type) {
+  document.querySelectorAll('.where-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  whereChoice = type;
+  const city = document.getElementById('addr-city').value.trim() || 'my hometown';
+  const typeMap = { town: 'town 🏘️', city: 'city 🌆', country: 'countryside 🌾' };
+  document.getElementById('q4-place').textContent = city;
+  document.getElementById('q4-type').textContent = typeMap[type];
+  document.getElementById('q4-sentence').style.display = 'block';
+  document.getElementById('q4-submit').style.display = 'inline-block';
+}
+function submitWhere() {
+  if (!whereChoice) return;
+  q4Done = true;
+  currentScore += 10;
+  confetti();
+  showFeedback(true, 'Great! You know where you live! 🏡', '+10 pts!', () => {
+    finishGame();
+  });
 }
 
-// ══════════════════════════════════════════
-// GRAND FINALE
-// ══════════════════════════════════════════
-function showFinale() {
-  const total = 10 + pageScores.p2max + 12;
-  const pct = globalScore / total;
-  document.getElementById('finale-name').textContent = studentName + '! 🎉';
-  document.getElementById('finale-score').textContent = '⭐ ' + globalScore;
-  document.getElementById('finale-slabel').textContent = `out of ${total} total stars`;
+// ─── FINISH & RESULTS ───
+async function finishGame() {
+  const score = currentScore;
+  const stars = score >= 90 ? '⭐⭐⭐' : score >= 60 ? '⭐⭐' : '⭐';
+  const trophy = score >= 90 ? '🏆' : score >= 60 ? '🎖️' : '🌟';
+  const msgs = [
+    score >= 90 ? '超棒！ You are an ADDRESS EXPERT! 🎓' : '',
+    score >= 70 && score < 90 ? '很好！ Great job, keep it up! 👍' : '',
+    score >= 50 && score < 70 ? '不錯！ Good work! Practice makes perfect! 💪' : '',
+    score < 50 ? '加油！ Keep trying — you can do it! 🌈' : '',
+  ].find(m => m !== '') || 'Well done!';
 
-  let msg = '';
-  if (pct === 1)       msg = `A PERFECT score! ${studentName}, you are an absolute grammar superstar! We are so proud of you! 🏆🌟`;
-  else if (pct >= 0.85) msg = `Incredible work, ${studentName}! You clearly know your present simple really well. Keep it up! 🌟`;
-  else if (pct >= 0.7)  msg = `Well done, ${studentName}! You've done a great job today. A little more practice and you'll be perfect! 😊`;
-  else if (pct >= 0.5)  msg = `Good effort, ${studentName}! You're on the right track — review and try again to improve! 💪`;
-  else                   msg = `Keep going, ${studentName}! Every attempt makes you stronger. Practice makes perfect! 📚`;
+  document.getElementById('result-trophy').textContent    = trophy;
+  document.getElementById('result-name-title').textContent = `${playerName}, you got...`;
+  document.getElementById('result-score-num').textContent  = score;
+  document.getElementById('result-stars').textContent      = stars;
+  document.getElementById('result-msg').textContent        = msgs;
+  document.getElementById('q4-score').textContent          = currentScore;
 
-  document.getElementById('finale-msg').textContent = msg;
-  document.getElementById('finale-breakdown').innerHTML = `
-    <div class="fb-item">🤔 Pick the Pronoun<strong>${pageScores.p1} / 10</strong></div>
-    <div class="fb-item">⚙️ Conjugate!<strong>${pageScores.p2} / ${pageScores.p2max}</strong></div>
-    <div class="fb-item">❓ Questions<strong>${pageScores.p3} / 12</strong></div>
-  `;
-  document.getElementById('finale-screen').classList.add('show');
-  launchConfetti();
-  setTimeout(launchConfetti, 700);
+  scoreboard = await saveScore(playerName, score);
+  showScreen('screen-results');
+  confetti(); confetti();
 }
 
-function restartAll() {
-  globalScore = 0;
-  document.getElementById('global-score').textContent = 0;
-  document.getElementById('finale-screen').classList.remove('show');
-  Object.assign(pageScores, { p1:0, p2:0, p3:0 });
-  p1Init(); p2Init(); p3Init(); goPage(1);
+// ─── SCOREBOARD ───
+async function goToScoreboard() {
+  const board = await loadScoreboard();
+  renderScoreboard(board);
+  showScreen('screen-scoreboard');
+}
+function renderScoreboard(board) {
+  const medals = ['🥇','🥈','🥉'];
+  if (!board || board.length === 0) {
+    document.getElementById('scoreboard-table-wrap').innerHTML =
+      '<p class="no-scores">No scores yet! Be the first to play! 🌟</p>';
+    return;
+  }
+  document.getElementById('scoreboard-table-wrap').innerHTML = `
+    <table class="scoreboard-table">
+      <thead><tr><th>#</th><th>🏆 Name / 名字</th><th>⭐ Score</th></tr></thead>
+      <tbody>
+        ${board.map((p, i) => `
+          <tr class="${i < 3 ? 'rank-'+(i+1) : ''}">
+            <td><span class="rank-medal">${medals[i] || (i+1)}</span></td>
+            <td>${p.name}</td>
+            <td style="font-family:'Fredoka One',cursive;font-size:1.2rem;color:#2563EB">${p.score}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+async function clearScoreboard() {
+  if (!confirm('Clear all scores? 清除所有分數？')) return;
+  try { await window.storage.delete('home-game-scores'); } catch {}
+  renderScoreboard([]);
+}
+function newPlayer() {
+  document.getElementById('playerName').value = '';
+  showScreen('screen-welcome');
+}
+
+// ─── FEEDBACK POPUP ───
+function showFeedback(correct, msg, pts, cb) {
+  feedbackCallback = cb;
+  document.getElementById('fb-emoji').textContent = correct ? '🎉' : '💪';
+  document.getElementById('fb-title').textContent = correct ? 'Correct! ✅' : 'Not quite!';
+  document.getElementById('fb-title').style.color = correct ? '#16A34A' : '#DC2626';
+  document.getElementById('fb-msg').textContent   = msg;
+  document.getElementById('fb-pts').textContent   = pts;
+  document.getElementById('fb-pts').style.color   = correct ? '#16A34A' : '#6B7280';
+  document.getElementById('feedback-overlay').style.display = 'flex';
+}
+function closeFeedback() {
+  document.getElementById('feedback-overlay').style.display = 'none';
+  if (feedbackCallback) { feedbackCallback(); feedbackCallback = null; }
+}
+
+// ─── CONFETTI ───
+function confetti() {
+  const colors = ['#FFD93D','#FF6B6B','#6BCB77','#5BC8F5','#A78BFA','#FFA94D'];
+  for (let i = 0; i < 24; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `
+      left: ${Math.random()*100}vw;
+      top: -20px;
+      background: ${colors[Math.floor(Math.random()*colors.length)]};
+      animation-delay: ${Math.random()*0.6}s;
+      animation-duration: ${0.9 + Math.random()*0.6}s;
+      transform: rotate(${Math.random()*360}deg);
+      border-radius: ${Math.random()>0.5?'50%':'2px'};
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1800);
+  }
 }
 </script>
 </body>
